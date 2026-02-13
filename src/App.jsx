@@ -319,7 +319,49 @@ const Create = ({onNav,userId,onCreate}) => {
     }).select().single();
     setSaving(false);
     if(error){setErr({submit:error.message});}
-    else{onCreate(data);}
+    else{
+      // Send notification email to recipient via Brevo
+      try{
+        const BREVO_KEY=import.meta.env.VITE_BREVO_API_KEY;
+        if(BREVO_KEY){
+          const formattedDate=fmtD(f.date);
+          const formattedTime=fmtT(f.time);
+          await fetch('https://api.brevo.com/v3/smtp/email',{
+            method:'POST',
+            headers:{'api-key':BREVO_KEY,'Content-Type':'application/json'},
+            body:JSON.stringify({
+              sender:{name:'Bondzy',email:'info@bondzy.com'},
+              to:[{email:f.recipientEmail,name:f.recipientName}],
+              subject:'🎁 Someone has a Reward Bondzy for you!',
+              htmlContent:`
+                <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
+                  <div style="background:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
+                    <h1 style="color:#D4A843;margin:0;font-size:24px;">✨ Bondzy</h1>
+                  </div>
+                  <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
+                    <h2 style="color:#1B2A4A;margin:0 0 8px;">Hi ${f.recipientName}! 👋</h2>
+                    <p style="color:#5A6570;font-size:15px;line-height:1.6;">Someone buried a treasure for you using Bondzy! Show up at the right place and time to claim your reward.</p>
+                    <div style="background:#FFF8E7;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #D4A843;">
+                      <p style="margin:4px 0;font-size:14px;">📍 <strong>Go to:</strong> ${f.locationName}</p>
+                      <p style="margin:4px 0;font-size:14px;">📅 <strong>When:</strong> ${formattedDate} at ${formattedTime}</p>
+                      <p style="margin:4px 0;font-size:14px;">⏰ <strong>Grace:</strong> 10 minutes</p>
+                      <p style="margin:4px 0;font-size:14px;">🎁 <strong>Reward:</strong> ${f.rewardDescription.trim()||'Bondzy Reward'}</p>
+                    </div>
+                    <p style="color:#5A6570;font-size:14px;line-height:1.6;">Open Bondzy at the right place and time, verify your GPS, and the treasure is yours!</p>
+                    <div style="text-align:center;margin:20px 0;">
+                      <a href="https://bondzy.vercel.app" style="background:#D4A843;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">Open Bondzy</a>
+                    </div>
+                  </div>
+                  <div style="padding:16px;text-align:center;color:#8E99A4;font-size:12px;border-radius:0 0 12px 12px;">
+                    <p style="margin:0;">Bondzy — No More Hoping. Make Things Happen.</p>
+                  </div>
+                </div>`,
+            }),
+          });
+        }
+      }catch(emailErr){console.log("Email notification failed:",emailErr);}
+      onCreate(data);
+    }
   };
 
   const ls={display:"block",fontSize:13,fontWeight:700,color:B.navy,marginBottom:5};
