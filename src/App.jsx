@@ -7,26 +7,50 @@ const B = {
   blu:"#3B82F6",bluL:"#EBF4FF",gry:"#8E99A4",gryL:"#E8ECF0",gryD:"#5A6570",bdr:"#DDE1E6",
 };
 
-const PLACES = [
-  {id:"p1",n:"Planet Fitness",a:"1500 Market St, Philadelphia, PA",lat:39.9526,lng:-75.168},
-  {id:"p2",n:"Planet Fitness - Broad St",a:"2301 S Broad St, Philadelphia, PA",lat:39.924,lng:-75.171},
-  {id:"p3",n:"LA Fitness",a:"1735 Chestnut St, Philadelphia, PA",lat:39.9517,lng:-75.1695},
-  {id:"p4",n:"Free Library of Philadelphia",a:"1901 Vine St, Philadelphia, PA",lat:39.9608,lng:-75.171},
-  {id:"p5",n:"Philadelphia Museum of Art",a:"2600 Benjamin Franklin Pkwy, Philadelphia, PA",lat:39.9656,lng:-75.181},
-  {id:"p6",n:"Penn Medicine",a:"3400 Spruce St, Philadelphia, PA",lat:39.9494,lng:-75.193},
-  {id:"p7",n:"Dr. Smith Family Practice",a:"1601 Walnut St Suite 800, Philadelphia, PA",lat:39.9498,lng:-75.168},
-  {id:"p8",n:"Starbucks - Rittenhouse",a:"1528 Walnut St, Philadelphia, PA",lat:39.949,lng:-75.17},
-  {id:"p9",n:"Whole Foods Market",a:"2101 Pennsylvania Ave, Philadelphia, PA",lat:39.9585,lng:-75.172},
-  {id:"p10",n:"YMCA - Columbia North",a:"1400 N Broad St, Philadelphia, PA",lat:39.9685,lng:-75.16},
-  {id:"p11",n:"Community Recovery Center",a:"1700 Spring Garden St, Philadelphia, PA",lat:39.9615,lng:-75.1635},
-  {id:"p12",n:"CrossFit Center City",a:"1601 Spring Garden St, Philadelphia, PA",lat:39.961,lng:-75.1638},
-  {id:"p13",n:"Jefferson Hospital",a:"111 S 11th St, Philadelphia, PA",lat:39.949,lng:-75.1575},
-  {id:"p14",n:"Reading Terminal Market",a:"51 N 12th St, Philadelphia, PA",lat:39.9533,lng:-75.1593},
-  {id:"p15",n:"AA Meeting - Friends Center",a:"1501 Cherry St, Philadelphia, PA",lat:39.9555,lng:-75.164},
-  {id:"p16",n:"Spa Terme Di Aroma",a:"32 S 18th St, Philadelphia, PA",lat:39.951,lng:-75.1715},
-  {id:"p17",n:"University of Pennsylvania",a:"3451 Walnut St, Philadelphia, PA",lat:39.9522,lng:-75.1932},
-];
-const findPlaces = q => {if(!q||q.length<2)return[];const l=q.toLowerCase();return PLACES.filter(p=>p.n.toLowerCase().includes(l)||p.a.toLowerCase().includes(l)).slice(0,5);};
+const GKEY = import.meta.env.VITE_GOOGLE_PLACES_KEY;
+
+// Google Places Autocomplete via REST API
+let searchTimer = null;
+const searchPlaces = (query, callback) => {
+  clearTimeout(searchTimer);
+  if (!query || query.length < 3) { callback([]); return; }
+  searchTimer = setTimeout(async () => {
+    try {
+      const res = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Goog-Api-Key": GKEY },
+        body: JSON.stringify({ input: query, languageCode: "en" })
+      });
+      const data = await res.json();
+      const suggestions = (data.suggestions || [])
+        .filter(s => s.placePrediction)
+        .slice(0, 5)
+        .map(s => ({
+          id: s.placePrediction.placeId,
+          n: s.placePrediction.structuredFormat?.mainText?.text || s.placePrediction.text?.text || query,
+          a: s.placePrediction.structuredFormat?.secondaryText?.text || "",
+          placeId: s.placePrediction.placeId,
+        }));
+      callback(suggestions);
+    } catch (e) { console.error("Places search error:", e); callback([]); }
+  }, 350);
+};
+
+// Fetch lat/lng for a selected place
+const getPlaceDetails = async (placeId) => {
+  try {
+    const res = await fetch(`https://places.googleapis.com/v1/places/${placeId}?fields=location,formattedAddress,displayName`, {
+      headers: { "X-Goog-Api-Key": GKEY }
+    });
+    const data = await res.json();
+    return {
+      lat: data.location?.latitude,
+      lng: data.location?.longitude,
+      address: data.formattedAddress || "",
+      name: data.displayName?.text || "",
+    };
+  } catch (e) { console.error("Place details error:", e); return null; }
+};
 
 const Ic = ({name,size=20,color="currentColor"}) => {
   const d = {
@@ -275,8 +299,8 @@ const Create = ({onNav,userId,onCreate}) => {
   const [f,sF]=useState({recipientName:"",recipientEmail:"",locationSearch:"",locationName:"",locationAddress:"",locationLat:null,locationLng:null,date:"",time:"",rewardLink:"",rewardDescription:""});
 
   const up=(k,v)=>{sF(p=>({...p,[k]:v}));setErr(e=>({...e,[k]:undefined}));};
-  const locS=q=>{up("locationSearch",q);if(q.length>=2){setSug(findPlaces(q));setShowS(true);}else{setSug([]);setShowS(false);}if(selP){setSelP(null);sF(p=>({...p,locationName:"",locationAddress:"",locationLat:null,locationLng:null}));}};
-  const pick=p=>{setSelP(p);sF(x=>({...x,locationSearch:p.n+" — "+p.a,locationName:p.n,locationAddress:p.a,locationLat:p.lat,locationLng:p.lng}));setSug([]);setShowS(false);setErr(e=>({...e,location:undefined}));};
+  const locS=q=>{up("locationSearch",q);if(selP){setSelP(null);sF(p=>({...p,locationName:"",locationAddress:"",locationLat:null,locationLng:null}));}searchPlaces(q,(results)=>{setSug(results);setShowS(results.length>0);});};
+  const pick=async(p)=>{setSug([]);setShowS(false);sF(x=>({...x,locationSearch:p.n+" — "+p.a}));setErr(e=>({...e,location:undefined}));const details=await getPlaceDetails(p.placeId);if(details){setSelP({n:details.name||p.n,a:details.address||p.a});sF(x=>({...x,locationSearch:(details.name||p.n)+" — "+(details.address||p.a),locationName:details.name||p.n,locationAddress:details.address||p.a,locationLat:details.lat,locationLng:details.lng}));}else{setSelP({n:p.n,a:p.a});}};
 
   const v1=()=>{const e={};if(!f.recipientName.trim())e.recipientName="Required";if(!f.recipientEmail.includes("@"))e.recipientEmail="Valid email required";setErr(e);return!Object.keys(e).length;};
   const v2=()=>{const e={};if(!f.locationLat)e.location="Select a location";if(!f.date)e.date="Required";if(!f.time)e.time="Required";setErr(e);return!Object.keys(e).length;};
@@ -329,14 +353,14 @@ const Create = ({onNav,userId,onCreate}) => {
       {step===2&&<>
         <div style={{...fw,position:"relative"}}>
           <label style={ls}>Search for a Location</label>{er2(err.location)}
-          <div style={{position:"relative"}}><input className="inp" placeholder='Try "Planet Fitness", "Library"...' value={f.locationSearch} onChange={e=>locS(e.target.value)} onFocus={()=>sug.length>0&&setShowS(true)} onBlur={()=>setTimeout(()=>setShowS(false),200)} style={{paddingLeft:36}}/><div style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}}><Ic name="search" size={16} color={B.gry}/></div></div>
+          <div style={{position:"relative"}}><input className="inp" placeholder='Search any place or address...' value={f.locationSearch} onChange={e=>locS(e.target.value)} onFocus={()=>sug.length>0&&setShowS(true)} onBlur={()=>setTimeout(()=>setShowS(false),200)} style={{paddingLeft:36}}/><div style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}}><Ic name="search" size={16} color={B.gry}/></div></div>
           {showS&&sug.length>0&&<div style={{position:"absolute",left:0,right:0,top:"100%",background:"white",border:`2px solid ${B.navy}`,borderRadius:10,boxShadow:"0 8px 30px rgba(0,0,0,0.12)",zIndex:50,overflow:"hidden",animation:"fadeIn 0.15s ease"}}>
             {sug.map((p,i)=><div key={p.id} onMouseDown={()=>pick(p)} style={{padding:"10px 12px",cursor:"pointer",borderBottom:i<sug.length-1?`1px solid ${B.bdr}`:"none",display:"flex",gap:8,alignItems:"center"}} onMouseEnter={e=>e.currentTarget.style.background=B.off} onMouseLeave={e=>e.currentTarget.style.background="white"}>
               <div style={{width:28,height:28,borderRadius:6,background:B.navy,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Ic name="pin" size={14} color={B.gold}/></div>
               <div><div style={{fontSize:13,fontWeight:600}}>{p.n}</div><div style={{fontSize:11,color:B.gryD}}>{p.a}</div></div>
             </div>)}
           </div>}
-          {f.locationSearch.length>=2&&!sug.length&&!selP&&<div style={{marginTop:6,padding:"8px 12px",background:B.off,borderRadius:6,fontSize:12,color:B.gryD}}>💡 Try "Planet Fitness", "Library", "Hospital", "Starbucks", "YMCA"</div>}
+          {f.locationSearch.length>=3&&!sug.length&&!selP&&<div style={{marginTop:6,padding:"8px 12px",background:B.off,borderRadius:6,fontSize:12,color:B.gryD}}>🔍 Searching... try a business name or address</div>}
         </div>
         {selP&&<div style={{background:B.grnL,border:`1px solid ${B.grn}30`,borderRadius:10,padding:12,marginBottom:16,display:"flex",gap:10,alignItems:"center",animation:"fadeIn 0.2s ease"}}>
           <Ic name="check" size={18} color={B.grn}/><div style={{flex:1}}><div style={{fontSize:14,fontWeight:700}}>{selP.n}</div><div style={{fontSize:12,color:B.gryD}}>{selP.a}</div></div>
