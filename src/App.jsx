@@ -235,7 +235,7 @@ const Profile = ({email,profile,onLogout}) => (
 // ========== DASHBOARD ==========
 const Dash = ({bondzies,email,userId,onNav,onView,filter,setFilter,tab,setTab,loading}) => {
   const cr=bondzies.filter(b=>b.creator_id===userId);
-  const rc=bondzies.filter(b=>b.recipient_email===email||b.recipient_id===userId);
+  const rc=bondzies.filter(b=>b.recipient_email?.toLowerCase()===email?.toLowerCase()||b.recipient_id===userId);
   // Avoid showing same bondzy in both tabs
   const rcFiltered=rc.filter(b=>b.creator_id!==userId);
   const act=tab==="created"?cr:rcFiltered;
