@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "./supabase";
 
 const B = {
@@ -437,6 +437,7 @@ const Create = ({onNav,userId,onCreate}) => {
 };
 
 // ========== DETAIL ==========
+// ========== DETAIL (UPDATED WITH TIME WINDOWS) ==========
 const Detail = ({bz,onNav,onRedeem,role}) => {
   const [gps,setGps]=useState("idle");
   const [d,setD]=useState(null);
@@ -444,32 +445,121 @@ const Detail = ({bz,onNav,onRedeem,role}) => {
   const [cop,setCop]=useState(false);
   const [conf,setConf]=useState(bz.status==="redeemed"&&role==="recipient");
   const [redeeming,setRedeeming]=useState(false);
+  const [now,setNow]=useState(new Date());
+  const [gpsChecked,setGpsChecked]=useState(false);
   const isR=role==="recipient";
   const sc=stC(bz.status);
 
-  const timeS=()=>{
-    const now=new Date(),bt=new Date(`${bz.date}T${bz.time}`);
-    const early=new Date(bt.getTime()-5*60000),late=new Date(bt.getTime()+(bz.grace_minutes||10)*60000);
-    if(now<early){const df=bt-now,dy=Math.floor(df/864e5),hr=Math.floor((df%864e5)/36e5),mn=Math.floor((df%36e5)/6e4);return{ok:false,r:"early",m:dy>0?`Opens in ${dy}d ${hr}h`:hr>0?`Opens in ${hr}h ${mn}m`:`Opens in ${mn}m`};}
-    if(now>late)return{ok:false,r:"expired",m:"Window closed"};
-    return{ok:true,r:"open",m:"Window open!"};
-  };
-  const ts=bz.status==="active"?timeS():null;
+  // Live countdown - updates every second
+  useEffect(()=>{
+    const timer=setInterval(()=>setNow(new Date()),1000);
+    return()=>clearInterval(timer);
+  },[]);
+
+  // Calculate time window state (runs every second via now dependency)
+  const ts=useMemo(()=>{
+    if(bz.status!=="active"||!bz.date||!bz.time)return null;
+    
+    const bondzyTime=new Date(`${bz.date}T${bz.time}`);
+    const grace=bz.grace_minutes||10;
+    const earlyBuffer=10; // 10 minutes before
+    const start=new Date(bondzyTime.getTime()-earlyBuffer*60000);
+    const end=new Date(bondzyTime.getTime()+grace*60000);
+    const msToStart=start-now;
+    const msToEnd=end-now;
+    
+    // Format countdown timer
+    const formatCountdown=(ms)=>{
+      if(ms<=0)return null;
+      const totalSecs=Math.floor(ms/1000);
+      const hours=Math.floor(totalSecs/3600);
+      const mins=Math.floor((totalSecs%3600)/60);
+      const secs=totalSecs%60;
+      if(hours>0)return`${hours}h ${mins}m ${secs}s`;
+      if(mins>0)return`${mins}m ${secs}s`;
+      return`${secs}s`;
+    };
+
+    // EXPIRED
+    if(msToEnd<0){
+      return{
+        state:"expired",
+        canCheck:false,
+        statusColor:B.red,
+        statusBg:B.redL,
+        icon:"⛔",
+        title:"Window Closed",
+        message:`This Bondzy expired at ${fmtT(new Date(end).toTimeString().slice(0,5))}.`
+      };
+    }
+
+    // TOO EARLY
+    if(msToStart>0){
+      const countdown=formatCountdown(msToStart);
+      return{
+        state:"early",
+        canCheck:false,
+        statusColor:B.gryD,
+        statusBg:B.gryL,
+        icon:"🔒",
+        title:`Opens in ${countdown}`,
+        message:`Come back between ${fmtT(new Date(start).toTimeString().slice(0,5))} and ${fmtT(new Date(end).toTimeString().slice(0,5))} to redeem your Bondzy.`
+      };
+    }
+
+    // ACTIVE WINDOW
+    const countdown=formatCountdown(msToEnd);
+    return{
+      state:"active",
+      canCheck:true,
+      statusColor:B.gold,
+      statusBg:`${B.gold}20`,
+      icon:"⏰",
+      title:`Active! Closes in ${countdown}`,
+      message:`Head to ${bz.location_name} now to claim your reward!`
+    };
+  },[bz.status,bz.date,bz.time,bz.grace_minutes,bz.location_name,now]);
+
+  // Auto-check GPS when window becomes active (for recipients only)
+  useEffect(()=>{
+    if(isR&&ts&&ts.state==="active"&&gps==="idle"&&!gpsChecked){
+      setGpsChecked(true);
+      chkGPS();
+    }
+  },[ts,isR,gps,gpsChecked]);
 
   const chkGPS=()=>{
+    if(!ts||!ts.canCheck)return; // Prevent GPS check if not in window
     setGps("checking");
     if(!navigator.geolocation){setGps("nosup");return;}
     navigator.geolocation.getCurrentPosition(
-      pos=>{const dd=getDist(pos.coords.latitude,pos.coords.longitude,bz.location_lat,bz.location_lng);setD(Math.round(dd));setAcc(Math.round(pos.coords.accuracy));setGps(dd<=150?"success":"far");},
-      e=>{if(e.code===1)setGps("denied");else{setGps("success");setD(42);setAcc(8);}},
+      pos=>{
+        const dd=getDist(pos.coords.latitude,pos.coords.longitude,bz.location_lat,bz.location_lng);
+        setD(Math.round(dd));
+        setAcc(Math.round(pos.coords.accuracy));
+        setGps(dd<=150?"success":"far");
+      },
+      e=>{setGps(e.code===1?"denied":"error");},
       {enableHighAccuracy:true,timeout:15000,maximumAge:0}
     );
   };
-  const doR=async()=>{setRedeeming(true);await onRedeem(bz.id);setRedeeming(false);setConf(true);};
+
+  const doR=async()=>{
+    setRedeeming(true);
+    await onRedeem(bz.id);
+    setRedeeming(false);
+    setConf(true);
+  };
 
   return <div style={{maxWidth:580,margin:"0 auto",padding:"28px 20px 80px"}}>
-    <button onClick={()=>onNav("dashboard")} style={{background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:4,color:B.gryD,fontSize:14,fontWeight:600,marginBottom:20}}><Ic name="back" size={16}/> My Bondzies</button>
-    {conf&&<div style={{textAlign:"center",marginBottom:16}}>{"🎉✨🎊⭐💫🏆".split("").slice(0,6).map((e,i)=><span key={i} style={{display:"inline-block",fontSize:24,animation:`confetti 1.5s ease ${i*0.12}s both`,marginRight:6}}>{e}</span>)}</div>}
+    <button onClick={()=>onNav("dashboard")} style={{background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:4,color:B.gryD,fontSize:14,fontWeight:600,marginBottom:20}}>
+      <Ic name="back" size={16}/> My Bondzies
+    </button>
+    
+    {conf&&<div style={{textAlign:"center",marginBottom:16}}>
+      {"🎉✨🎊⭐💫🏆".split("").slice(0,6).map((e,i)=><span key={i} style={{display:"inline-block",fontSize:24,animation:`confetti 1.5s ease ${i*0.12}s both`,marginRight:6}}>{e}</span>)}
+    </div>}
+    
     <div style={{background:B.wh,borderRadius:14,border:`2px solid ${bz.status==="redeemed"?B.grn:bz.status==="forfeit"?B.red:B.navy}`,overflow:"hidden",animation:"slideUp 0.4s ease"}}>
       <div style={{background:bz.status==="redeemed"?B.grn:bz.status==="forfeit"?B.red:B.navy,padding:"22px 24px",color:"white",textAlign:"center"}}>
         <div style={{fontSize:11,fontWeight:800,letterSpacing:1.5,marginBottom:6,opacity:0.8}}>REWARD BONDZY</div>
@@ -477,10 +567,12 @@ const Detail = ({bz,onNav,onRedeem,role}) => {
           {bz.status==="redeemed"?(isR?"🏆 You Claimed It!":`✅ ${bz.recipient_name} Claimed It!`):bz.status==="forfeit"?"Treasure Unclaimed":isR?"🎁 A Treasure Awaits!":"Waiting for "+bz.recipient_name}
         </div>
       </div>
+      
       <div style={{padding:24}}>
         <div style={{display:"flex",justifyContent:"center",marginBottom:20}}>
           <span style={{background:sc.bg,color:sc.tx,padding:"5px 16px",borderRadius:6,fontSize:12,fontWeight:800,textTransform:"uppercase",letterSpacing:0.5}}>{bz.status}</span>
         </div>
+        
         {[
           {ic:"user",l:isR?"From":"Recipient",v:isR?(bz.creator_email||"Someone"):`${bz.recipient_name} (${bz.recipient_email})`},
           {ic:"pin",l:"Location",v:`${bz.location_name}${bz.location_address?"\n"+bz.location_address:""}`},
@@ -488,28 +580,98 @@ const Detail = ({bz,onNav,onRedeem,role}) => {
           {ic:"gift",l:"Reward",v:bz.reward_description},
         ].map((item,i)=>(
           <div key={i} style={{display:"flex",gap:12,marginBottom:14,paddingBottom:14,borderBottom:i<3?`1px solid ${B.bdr}`:"none"}}>
-            <div style={{width:34,height:34,borderRadius:8,background:B.navy,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Ic name={item.ic} size={16} color={B.gold}/></div>
-            <div><div style={{fontSize:10,fontWeight:800,color:B.gry,letterSpacing:0.5,marginBottom:2}}>{item.l.toUpperCase()}</div><div style={{fontSize:14,whiteSpace:"pre-line",lineHeight:1.5}}>{item.v}</div></div>
+            <div style={{width:34,height:34,borderRadius:8,background:B.navy,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <Ic name={item.ic} size={16} color={B.gold}/>
+            </div>
+            <div>
+              <div style={{fontSize:10,fontWeight:800,color:B.gry,letterSpacing:0.5,marginBottom:2}}>{item.l.toUpperCase()}</div>
+              <div style={{fontSize:14,whiteSpace:"pre-line",lineHeight:1.5}}>{item.v}</div>
+            </div>
           </div>
         ))}
 
-        {isR&&bz.status==="redeemed"&&<div style={{background:B.grnL,borderRadius:10,padding:16,marginTop:4,textAlign:"center"}}><div style={{fontSize:13,fontWeight:700,color:B.grn,marginBottom:6}}>🎉 YOUR REWARD</div><a href={bz.reward_link} target="_blank" rel="noopener noreferrer" style={{color:B.grn,fontWeight:600,wordBreak:"break-all",fontSize:14}}>{bz.reward_link}</a></div>}
-        {!isR&&bz.status==="active"&&<div style={{background:B.off,borderRadius:10,padding:16,marginTop:4,textAlign:"center"}}><div style={{fontSize:32,marginBottom:8}}>⏳</div><div style={{fontSize:14,fontWeight:700,marginBottom:4}}>Waiting for {bz.recipient_name}</div><p style={{fontSize:13,color:B.gryD}}>When they verify GPS, this updates automatically.</p></div>}
-        {!isR&&bz.status==="redeemed"&&<div style={{background:B.grnL,borderRadius:10,padding:16,marginTop:4,textAlign:"center"}}><div style={{fontSize:13,fontWeight:700,color:B.grn}}>✅ {bz.recipient_name} claimed this reward</div>{bz.redeemed_at&&<p style={{fontSize:12,color:B.gryD,marginTop:4}}>{new Date(bz.redeemed_at).toLocaleString()}</p>}</div>}
-
-        {isR&&bz.status==="active"&&<div style={{background:B.off,borderRadius:10,padding:20,marginTop:4,textAlign:"center",border:`1px solid ${B.bdr}`}}>
-          <div style={{fontSize:15,fontWeight:700,marginBottom:10}}>📍 GPS Verification</div>
-          {ts&&<div style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 12px",borderRadius:6,fontSize:12,fontWeight:700,marginBottom:12,background:ts.ok?B.grnL:ts.r==="expired"?B.redL:`${B.gold}20`,color:ts.ok?B.grn:ts.r==="expired"?B.red:B.goldD}}><Ic name="clock" size={12} color={ts.ok?B.grn:ts.r==="expired"?B.red:B.goldD}/> {ts.m}</div>}
-          {ts&&ts.r==="expired"&&<p style={{fontSize:13,color:B.gryD}}>The grace period has passed.</p>}
-          {gps==="idle"&&ts&&(ts.ok||ts.r==="early")&&<><p style={{fontSize:13,color:B.gryD,marginBottom:14}}>{ts.ok?<>Are you at <strong>{bz.location_name}</strong>?</>:<>Head to <strong>{bz.location_name}</strong> by <strong>{fmtT(bz.time)}</strong>.</>}</p><button className={ts.ok?"btn bgr":"btn bo"} onClick={chkGPS} style={ts.ok?{animation:"glow 2s infinite",fontSize:15,padding:"14px 32px"}:{}}>📍 {ts.ok?"I'm Here — Verify":"Check My Location"}</button></>}
-          {gps==="checking"&&<div style={{padding:16}}><div style={{width:32,height:32,border:`3px solid ${B.gryL}`,borderTopColor:B.navy,borderRadius:"50%",margin:"0 auto 10px",animation:"spin 0.8s linear infinite"}}/><p style={{color:B.gryD,fontSize:13}}>Getting GPS...</p></div>}
-          {gps==="success"&&<><div style={{width:48,height:48,borderRadius:"50%",background:B.grnL,margin:"0 auto 10px",display:"flex",alignItems:"center",justifyContent:"center"}}><Ic name="check" size={24} color={B.grn}/></div><p style={{fontSize:15,fontWeight:700,color:B.grn,marginBottom:4}}>Location Verified! ✅</p><p style={{fontSize:13,color:B.gryD,marginBottom:4}}>You're {d}m from {bz.location_name}</p>{acc&&<p style={{fontSize:11,color:B.gry,marginBottom:16}}>±{acc}m · {acc<20?"🟢 High":acc<50?"🟡 Good":"🟠 Moderate"}</p>}<button className="btn bgr" onClick={doR} disabled={redeeming} style={{fontSize:16,padding:"14px 40px",animation:"pulse 1.5s infinite"}}>{redeeming?"Redeeming...":"🎁 Redeem My Reward!"}</button></>}
-          {gps==="far"&&<><p style={{fontSize:14,fontWeight:700,color:B.red,marginBottom:4}}>Not close enough</p><p style={{fontSize:13,color:B.gryD,marginBottom:14}}>{d>=1000?(d/1000).toFixed(1)+"km":d+"m"} away — need within 150m</p><button className="btn bn" onClick={()=>{setGps("idle");setD(null);}}>Try Again</button></>}
-          {gps==="denied"&&<><p style={{fontSize:14,fontWeight:700,color:B.red,marginBottom:6}}>Location Access Denied</p><p style={{fontSize:13,color:B.gryD,marginBottom:14}}>Enable location in browser settings.</p><button className="btn bn" onClick={()=>setGps("idle")}>Try Again</button></>}
+        {/* RECIPIENT - REDEEMED */}
+        {isR&&bz.status==="redeemed"&&<div style={{background:B.grnL,borderRadius:10,padding:16,marginTop:4,textAlign:"center"}}>
+          <div style={{fontSize:13,fontWeight:700,color:B.grn,marginBottom:6}}>🎉 YOUR REWARD</div>
+          <a href={bz.reward_link} target="_blank" rel="noopener noreferrer" style={{color:B.grn,fontWeight:600,wordBreak:"break-all",fontSize:14}}>{bz.reward_link}</a>
         </div>}
 
+        {/* CREATOR - ACTIVE */}
+        {!isR&&bz.status==="active"&&<div style={{background:B.off,borderRadius:10,padding:16,marginTop:4,textAlign:"center"}}>
+          <div style={{fontSize:32,marginBottom:8}}>⏳</div>
+          <div style={{fontSize:14,fontWeight:700,marginBottom:4}}>Waiting for {bz.recipient_name}</div>
+          <p style={{fontSize:13,color:B.gryD}}>When they verify GPS, this updates automatically.</p>
+        </div>}
+
+        {/* CREATOR - REDEEMED */}
+        {!isR&&bz.status==="redeemed"&&<div style={{background:B.grnL,borderRadius:10,padding:16,marginTop:4,textAlign:"center"}}>
+          <div style={{fontSize:13,fontWeight:700,color:B.grn}}>✅ {bz.recipient_name} claimed this reward</div>
+          {bz.redeemed_at&&<p style={{fontSize:12,color:B.gryD,marginTop:4}}>{new Date(bz.redeemed_at).toLocaleString()}</p>}
+        </div>}
+
+        {/* RECIPIENT - ACTIVE - GPS VERIFICATION */}
+        {isR&&bz.status==="active"&&ts&&<div style={{background:B.off,borderRadius:10,padding:20,marginTop:4,textAlign:"center",border:`1px solid ${B.bdr}`}}>
+          <div style={{fontSize:15,fontWeight:700,marginBottom:10}}>📍 GPS Verification</div>
+          
+          {/* TIME STATUS INDICATOR */}
+          <div style={{display:"inline-flex",alignItems:"center",gap:4,padding:"6px 14px",borderRadius:8,fontSize:13,fontWeight:700,marginBottom:12,background:ts.statusBg,color:ts.statusColor}}>
+            <span style={{fontSize:16}}>{ts.icon}</span> {ts.title}
+          </div>
+          
+          {/* STATE: EXPIRED */}
+          {ts.state==="expired"&&<p style={{fontSize:13,color:B.gryD,marginTop:8}}>{ts.message}</p>}
+          
+          {/* STATE: TOO EARLY */}
+          {ts.state==="early"&&gps==="idle"&&<>
+            <p style={{fontSize:13,color:B.gryD,marginBottom:8}}>{ts.message}</p>
+            <p style={{fontSize:12,color:B.gry,marginTop:12}}>⏰ You get a 10-minute grace period in case you're running late</p>
+          </>}
+          
+          {/* STATE: ACTIVE WINDOW */}
+          {ts.state==="active"&&<>
+            {/* GPS CHECKING - Auto-checking location */}
+            {gps==="checking"&&<div style={{padding:20}}>
+              <div style={{width:40,height:40,border:`4px solid ${B.goldL}`,borderTopColor:B.gold,borderRadius:"50%",margin:"0 auto 12px",animation:"spin 0.8s linear infinite"}}/>
+              <p style={{color:B.goldD,fontSize:14,fontWeight:600}}>Verifying your location...</p>
+            </div>}
+            
+            {/* GPS SUCCESS - HUGE REDEEM BUTTON */}
+            {gps==="success"&&<div style={{background:`linear-gradient(135deg, ${B.grnL} 0%, ${B.grn}20 100%)`,borderRadius:12,padding:28,marginTop:12,border:`2px solid ${B.grn}`,animation:"slideIn 0.4s ease"}}>
+              <div style={{textAlign:"center",marginBottom:16}}>
+                {"🎉✨🎊".split("").map((e,i)=><span key={i} style={{display:"inline-block",fontSize:28,animation:`confetti 1s ease ${i*0.1}s both`,marginRight:8}}>{e}</span>)}
+              </div>
+              <p style={{fontSize:17,fontWeight:800,color:B.grn,marginBottom:8,textAlign:"center"}}>✅ Location Verified!</p>
+              <p style={{fontSize:13,color:B.gryD,marginBottom:4,textAlign:"center"}}>You're roughly {d}m from {bz.location_name}</p>
+              {acc&&<p style={{fontSize:11,color:B.gry,marginBottom:20,textAlign:"center"}}>±{acc}m accuracy · {acc<20?"🟢 High":acc<50?"🟡 Good":"🟠 Moderate"}</p>}
+              <button className="btn bgr" onClick={doR} disabled={redeeming} style={{width:"100%",fontSize:18,padding:"18px 24px",fontWeight:800,animation:"pulse 1.5s infinite",boxShadow:`0 4px 20px ${B.grn}40`,background:`linear-gradient(135deg, ${B.grn} 0%, ${B.grnL} 100%)`,border:"none"}}>
+                {redeeming?"Redeeming...":"🎁 CLAIM YOUR REWARD!"}
+              </button>
+            </div>}
+            
+            {/* GPS TOO FAR - Show distance and retry */}
+            {gps==="far"&&<div style={{padding:16}}>
+              <div style={{fontSize:32,marginBottom:12}}>📍</div>
+              <p style={{fontSize:15,fontWeight:700,color:B.red,marginBottom:6}}>Not quite close enough</p>
+              <p style={{fontSize:13,color:B.gryD,marginBottom:4}}>You're roughly {d>=1000?(d/1000).toFixed(1)+"km":d+"m"} away</p>
+              <p style={{fontSize:12,color:B.gry,marginBottom:16}}>Get within 150m of {bz.location_name}</p>
+              <button className="btn bn" onClick={()=>{setGps("idle");setD(null);setGpsChecked(false);}}>📍 Check Location Again</button>
+            </div>}
+            
+            {/* GPS DENIED - Enable location */}
+            {gps==="denied"&&<div style={{padding:16}}>
+              <div style={{fontSize:32,marginBottom:12}}>🚫</div>
+              <p style={{fontSize:15,fontWeight:700,color:B.red,marginBottom:6}}>Location Access Needed</p>
+              <p style={{fontSize:13,color:B.gryD,marginBottom:16}}>Enable location in your browser settings to claim this Bondzy.</p>
+              <button className="btn bn" onClick={()=>{setGps("idle");setGpsChecked(false);}}>Try Again</button>
+            </div>}
+          </>}
+        </div>}
+
+        {/* COPY LINK BUTTON */}
         <div style={{marginTop:20,display:"flex",gap:8,justifyContent:"center"}}>
-          <button className="btn bo" style={{fontSize:13,padding:"8px 16px"}} onClick={()=>{navigator.clipboard?.writeText(window.location.href);setCop(true);setTimeout(()=>setCop(false),2000);}}><Ic name="copy" size={14}/> {cop?"Copied!":"Copy Link"}</button>
+          <button className="btn bo" style={{fontSize:13,padding:"8px 16px"}} onClick={()=>{navigator.clipboard?.writeText(window.location.href);setCop(true);setTimeout(()=>setCop(false),2000);}}>
+            <Ic name="copy" size={14}/> {cop?"Copied!":"Copy Link"}
+          </button>
         </div>
       </div>
     </div>
