@@ -367,6 +367,48 @@ const Create = ({onNav,userId,onCreate}) => {
           });
         }
       }catch(emailErr){console.log("Email notification failed:",emailErr);}
+      
+      // Send confirmation email to creator
+      try{
+        const BREVO_KEY=import.meta.env.VITE_BREVO_API_KEY;
+        if(BREVO_KEY){
+          const formattedDate=fmtD(f.date);
+          const formattedTime=fmtT(f.time);
+          await fetch('https://api.brevo.com/v3/smtp/email',{
+            method:'POST',
+            headers:{'api-key':BREVO_KEY,'Content-Type':'application/json'},
+            body:JSON.stringify({
+              sender:{name:'Bondzy',email:'info@bondzy.com'},
+              to:[{email:session.user.email}],
+              subject:'✅ Your Bondzy is posted!',
+              htmlContent:`
+                <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
+                  <div style="background:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
+                    <h1 style="color:#D4A843;margin:0;font-size:24px;">✨ Bondzy</h1>
+                  </div>
+                  <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
+                    <h2 style="color:#1B2A4A;margin:0 0 8px;">✅ Bondzy Posted Successfully!</h2>
+                    <p style="color:#5A6570;font-size:15px;line-height:1.6;">Your Reward Bondzy for <strong>${f.recipientName}</strong> is now active. They've received an email notification.</p>
+                    <div style="background:#E8F5E9;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #2E8B57;">
+                      <p style="margin:4px 0;font-size:14px;">👤 <strong>Recipient:</strong> ${f.recipientName} (${f.recipientEmail})</p>
+                      <p style="margin:4px 0;font-size:14px;">📍 <strong>Location:</strong> ${f.locationName}</p>
+                      <p style="margin:4px 0;font-size:14px;">📅 <strong>Date & Time:</strong> ${formattedDate} at ${formattedTime}</p>
+                      <p style="margin:4px 0;font-size:14px;">🎁 <strong>Reward:</strong> ${f.rewardDescription.trim()||'Bondzy Reward'}</p>
+                    </div>
+                    <p style="color:#5A6570;font-size:14px;line-height:1.6;">We'll notify you when ${f.recipientName} redeems their Bondzy!</p>
+                    <div style="text-align:center;margin:20px 0;">
+                      <a href="https://bondzy.vercel.app" style="background:#1B2A4A;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">View in Dashboard</a>
+                    </div>
+                  </div>
+                  <div style="padding:16px;text-align:center;color:#8E99A4;font-size:12px;border-radius:0 0 12px 12px;">
+                    <p style="margin:0;">Bondzy — No More Hoping. Make Things Happen.</p>
+                  </div>
+                </div>`,
+            }),
+          });
+        }
+      }catch(emailErr){console.log("Creator confirmation email failed:",emailErr);}
+      
       onCreate(data);
     }
   };
@@ -761,9 +803,54 @@ export default function BondzyApp() {
     const now=new Date().toISOString();
     const{error}=await supabase.from("bondzies").update({status:"redeemed",redeemed_at:now}).eq("id",id);
     if(!error){
+      const redeemedBondzy=bondzies.find(b=>b.id===id);
       setBondzies(prev=>prev.map(b=>b.id===id?{...b,status:"redeemed",redeemed_at:now}:b));
       setSel(prev=>prev?{...prev,status:"redeemed",redeemed_at:now}:prev);
       tt("🎉 Reward unlocked!");
+      
+      // Send notification email to creator
+      if(redeemedBondzy){
+        try{
+          const BREVO_KEY=import.meta.env.VITE_BREVO_API_KEY;
+          if(BREVO_KEY){
+            const formattedDate=fmtD(redeemedBondzy.date);
+            const formattedTime=fmtT(redeemedBondzy.time);
+            const redeemedAt=new Date(now).toLocaleString();
+            await fetch('https://api.brevo.com/v3/smtp/email',{
+              method:'POST',
+              headers:{'api-key':BREVO_KEY,'Content-Type':'application/json'},
+              body:JSON.stringify({
+                sender:{name:'Bondzy',email:'info@bondzy.com'},
+                to:[{email:redeemedBondzy.creator_email}],
+                subject:`🎉 ${redeemedBondzy.recipient_name} claimed your Bondzy!`,
+                htmlContent:`
+                  <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
+                    <div style="background:#2E8B57;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
+                      <h1 style="color:white;margin:0;font-size:24px;">🎉 Bondzy Redeemed!</h1>
+                    </div>
+                    <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
+                      <h2 style="color:#2E8B57;margin:0 0 8px;">Success! ${redeemedBondzy.recipient_name} showed up!</h2>
+                      <p style="color:#5A6570;font-size:15px;line-height:1.6;"><strong>${redeemedBondzy.recipient_name}</strong> successfully redeemed their Bondzy reward.</p>
+                      <div style="background:#E8F5E9;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #2E8B57;">
+                        <p style="margin:4px 0;font-size:14px;">📍 <strong>Location:</strong> ${redeemedBondzy.location_name}</p>
+                        <p style="margin:4px 0;font-size:14px;">📅 <strong>Scheduled:</strong> ${formattedDate} at ${formattedTime}</p>
+                        <p style="margin:4px 0;font-size:14px;">✅ <strong>Claimed:</strong> ${redeemedAt}</p>
+                        <p style="margin:4px 0;font-size:14px;">🎁 <strong>Reward:</strong> ${redeemedBondzy.reward_description}</p>
+                      </div>
+                      <p style="color:#5A6570;font-size:14px;line-height:1.6;">Your Bondzy worked! They were in the right place at the right time.</p>
+                      <div style="text-align:center;margin:20px 0;">
+                        <a href="https://bondzy.vercel.app" style="background:#2E8B57;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">View Dashboard</a>
+                      </div>
+                    </div>
+                    <div style="padding:16px;text-align:center;color:#8E99A4;font-size:12px;border-radius:0 0 12px 12px;">
+                      <p style="margin:0;">Bondzy — No More Hoping. Make Things Happen.</p>
+                    </div>
+                  </div>`,
+              }),
+            });
+          }
+        }catch(emailErr){console.log("Creator redemption notification failed:",emailErr);}
+      }
     }
   };
 
