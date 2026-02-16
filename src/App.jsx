@@ -296,7 +296,7 @@ const Dash = ({bondzies,email,userId,onNav,onView,filter,setFilter,tab,setTab,lo
 };
 
 // ========== CREATE BONDZY ==========
-const Create = ({onNav,userId,onCreate}) => {
+const Create = ({onNav,userId,onCreate,session}) => {
   const [step,setStep]=useState(1);
   const [err,setErr]=useState({});
   const [sug,setSug]=useState([]);
@@ -865,7 +865,7 @@ export default function BondzyApp() {
     <Header page={pg} onNav={nav} email={email}/>
     {pg==="landing"&&<AuthPage/>}
     {pg==="dashboard"&&<Dash bondzies={bondzies} email={email} userId={userId} onNav={nav} filter={df} setFilter={setDf} tab={dt} setTab={setDt} loading={bzLoad} onView={(b,r)=>{setSel(b);setRole(r);setPg("detail");}}/>}
-    {pg==="create"&&<Create onNav={nav} userId={userId} onCreate={handleCreate}/>}
+    {pg==="create"&&<Create onNav={nav} userId={userId} onCreate={handleCreate} session={session}/>}
     {pg==="detail"&&sel&&<Detail bz={sel} onNav={nav} onRedeem={handleRedeem} role={role}/>}
     {pg==="help"&&<Help/>}
     {pg==="profile"&&<Profile email={email} profile={profile} onLogout={handleLogout}/>}
