@@ -669,7 +669,12 @@ const Detail = ({bz,onNav,onRedeem,role}) => {
 
         {/* COPY LINK BUTTON */}
         <div style={{marginTop:20,display:"flex",gap:8,justifyContent:"center"}}>
-          <button className="btn bo" style={{fontSize:13,padding:"8px 16px"}} onClick={()=>{navigator.clipboard?.writeText(window.location.href);setCop(true);setTimeout(()=>setCop(false),2000);}}>
+          <button className="btn bo" style={{fontSize:13,padding:"8px 16px"}} onClick={()=>{
+            const shareUrl=`${window.location.origin}?bondzy=${bz.id}`;
+            navigator.clipboard?.writeText(shareUrl);
+            setCop(true);
+            setTimeout(()=>setCop(false),2000);
+          }}>
             <Ic name="copy" size={14}/> {cop?"Copied!":"Copy Link"}
           </button>
         </div>
@@ -724,6 +729,26 @@ export default function BondzyApp() {
     };
     load();
   },[session]);
+
+  // Handle shared Bondzy links (check URL parameters)
+  useEffect(()=>{
+    if(!session||bondzies.length===0)return;
+    const urlParams=new URLSearchParams(window.location.search);
+    const bondzyId=urlParams.get('bondzy');
+    if(bondzyId){
+      const bz=bondzies.find(b=>b.id===bondzyId);
+      if(bz){
+        setSel(bz);
+        // Determine if user is creator or recipient
+        const isCreator=bz.creator_id===session.user.id;
+        const isRecipient=bz.recipient_email?.toLowerCase()===session.user.email?.toLowerCase()||bz.recipient_id===session.user.id;
+        setRole(isCreator?"creator":isRecipient?"recipient":"viewer");
+        setPg("detail");
+        // Clean up URL
+        window.history.replaceState(null,"",window.location.origin);
+      }
+    }
+  },[session,bondzies]);
 
   const handleCreate=(newBz)=>{
     const withEmail={...newBz,creator_email:session.user.email};
