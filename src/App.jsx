@@ -318,6 +318,7 @@ const Create = ({onNav,userId,onCreate,session}) => {
     setSaving(true);
     const{data,error}=await supabase.from("bondzies").insert({
       type:"reward",status:"active",creator_id:userId,
+      creator_email:session.user.email,
       recipient_email:f.recipientEmail,recipient_name:f.recipientName,
       location_name:f.locationName,location_address:f.locationAddress||"",
       location_lat:f.locationLat,location_lng:f.locationLng,
@@ -333,7 +334,7 @@ const Create = ({onNav,userId,onCreate,session}) => {
         if(BREVO_KEY){
           const formattedDate=fmtD(f.date);
           const formattedTime=fmtT(f.time);
-          await fetch('https://api.brevo.com/v3/smtp/email',{
+          const recipResp=await fetch('https://api.brevo.com/v3/smtp/email',{
             method:'POST',
             headers:{'api-key':BREVO_KEY,'Content-Type':'application/json'},
             body:JSON.stringify({
@@ -365,6 +366,7 @@ const Create = ({onNav,userId,onCreate,session}) => {
                 </div>`,
             }),
           });
+          if(!recipResp.ok){const errBody=await recipResp.json().catch(()=>({}));console.error("Recipient email error:",recipResp.status,errBody);}
         }
       }catch(emailErr){console.log("Email notification failed:",emailErr);}
       
@@ -374,7 +376,7 @@ const Create = ({onNav,userId,onCreate,session}) => {
         if(BREVO_KEY){
           const formattedDate=fmtD(f.date);
           const formattedTime=fmtT(f.time);
-          await fetch('https://api.brevo.com/v3/smtp/email',{
+          const creatorResp=await fetch('https://api.brevo.com/v3/smtp/email',{
             method:'POST',
             headers:{'api-key':BREVO_KEY,'Content-Type':'application/json'},
             body:JSON.stringify({
@@ -406,6 +408,7 @@ const Create = ({onNav,userId,onCreate,session}) => {
                 </div>`,
             }),
           });
+          if(!creatorResp.ok){const errBody=await creatorResp.json().catch(()=>({}));console.error("Creator email error:",creatorResp.status,errBody);}
         }
       }catch(emailErr){console.log("Creator confirmation email failed:",emailErr);}
       
@@ -766,7 +769,7 @@ export default function BondzyApp() {
     const load=async()=>{
       setBzLoad(true);
       const{data}=await supabase.from("bondzies").select("*, creator:profiles!creator_id(email)").order("created_at",{ascending:false});
-      setBondzies((data||[]).map(b=>({...b,creator_email:b.creator?.email||""})));
+      setBondzies((data||[]).map(b=>({...b,creator_email:b.creator_email||b.creator?.email||""})));
       setBzLoad(false);
     };
     load();
@@ -812,16 +815,17 @@ export default function BondzyApp() {
       if(redeemedBondzy){
         try{
           const BREVO_KEY=import.meta.env.VITE_BREVO_API_KEY;
-          if(BREVO_KEY){
+          const creatorEmail=redeemedBondzy.creator_email;
+          if(BREVO_KEY&&creatorEmail){
             const formattedDate=fmtD(redeemedBondzy.date);
             const formattedTime=fmtT(redeemedBondzy.time);
             const redeemedAt=new Date(now).toLocaleString();
-            await fetch('https://api.brevo.com/v3/smtp/email',{
+            const redeemResp=await fetch('https://api.brevo.com/v3/smtp/email',{
               method:'POST',
               headers:{'api-key':BREVO_KEY,'Content-Type':'application/json'},
               body:JSON.stringify({
                 sender:{name:'Bondzy',email:'info@bondzy.com'},
-                to:[{email:redeemedBondzy.creator_email}],
+                to:[{email:creatorEmail}],
                 subject:`🎉 ${redeemedBondzy.recipient_name} claimed your Bondzy!`,
                 htmlContent:`
                   <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
@@ -848,7 +852,8 @@ export default function BondzyApp() {
                   </div>`,
               }),
             });
-          }
+            if(!redeemResp.ok){const errBody=await redeemResp.json().catch(()=>({}));console.error("Redemption email error:",redeemResp.status,errBody);}
+          }else if(BREVO_KEY&&!creatorEmail){console.error("Creator email missing — cannot send redemption notification. Bondzy ID:",redeemedBondzy.id);}
         }catch(emailErr){console.log("Creator redemption notification failed:",emailErr);}
       }
     }
