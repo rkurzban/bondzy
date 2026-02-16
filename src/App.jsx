@@ -147,7 +147,7 @@ const AuthPage = () => {
             <h2 style={{fontSize:20,marginBottom:8}}>Check your email!</h2>
             <p style={{fontSize:15,opacity:0.85,lineHeight:1.6}}>We sent a magic link to <strong>{email}</strong>. Click it to sign in.</p>
             <p style={{fontSize:13,opacity:0.6,marginTop:12}}>Don't see it? Check your spam folder.</p>
-            <button onClick={()=>setSent(false)} className="btn bo" style={{marginTop:16,borderColor:"rgba(255,255,255,0.3)",color:"white"}}>Try a different email</button>
+            <button onClick={()=>setSent(false)} className="btn bo" style={{marginTop:16,borderColor:"rgba(255,255,255,0.3)"}}>Try a different email</button>
           </div>
         )}
       </div>
