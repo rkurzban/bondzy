@@ -389,7 +389,7 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
                     </div>
                     <p style="color:#5A6570;font-size:14px;line-height:1.6;">If they don't verify their GPS at the location in time, you'll automatically receive the penalty link.</p>
                     <div style="text-align:center;margin:20px 0;">
-                      <a href="https://bondzy.vercel.app" style="background:#D4A843;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">Open Bondzy</a>
+                      <a href="https://app.bondzy.com" style="background:#D4A843;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">Open Bondzy</a>
                     </div>
                   </div>
                   <div style="padding:16px;text-align:center;color:#8E99A4;font-size:12px;border-radius:0 0 12px 12px;">
@@ -411,7 +411,7 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
                     </div>
                     <p style="color:#5A6570;font-size:14px;line-height:1.6;">Open Bondzy at the right place and time, verify your GPS, and the treasure is yours!</p>
                     <div style="text-align:center;margin:20px 0;">
-                      <a href="https://bondzy.vercel.app" style="background:#D4A843;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">Open Bondzy</a>
+                      <a href="https://app.bondzy.com" style="background:#D4A843;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">Open Bondzy</a>
                     </div>
                   </div>
                   <div style="padding:16px;text-align:center;color:#8E99A4;font-size:12px;border-radius:0 0 12px 12px;">
@@ -453,7 +453,7 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
                     </div>
                     <p style="color:#5A6570;font-size:14px;line-height:1.6;">${isProm?`Remember to check in at ${f.locationName} on time!`:`We'll notify you when ${f.recipientName} redeems their Bondzy!`}</p>
                     <div style="text-align:center;margin:20px 0;">
-                      <a href="https://bondzy.vercel.app" style="background:#1B2A4A;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">View in Dashboard</a>
+                      <a href="https://app.bondzy.com" style="background:#1B2A4A;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">View in Dashboard</a>
                     </div>
                   </div>
                   <div style="padding:16px;text-align:center;color:#8E99A4;font-size:12px;border-radius:0 0 12px 12px;">
@@ -949,7 +949,7 @@ export default function BondzyApp() {
                         </div>
                         <p style="color:#5A6570;font-size:14px;line-height:1.6;">The commitment was honored — no penalty triggered.</p>
                         <div style="text-align:center;margin:20px 0;">
-                          <a href="https://bondzy.vercel.app" style="background:#2E8B57;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">View on Bondzy</a>
+                          <a href="https://app.bondzy.com" style="background:#2E8B57;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">View on Bondzy</a>
                         </div>
                       </div>
                       <div style="padding:16px;text-align:center;color:#8E99A4;font-size:12px;">
@@ -989,7 +989,7 @@ export default function BondzyApp() {
                       </div>
                       <p style="color:#5A6570;font-size:14px;line-height:1.6;">Your Bondzy worked! They were in the right place at the right time.</p>
                       <div style="text-align:center;margin:20px 0;">
-                        <a href="https://bondzy.vercel.app" style="background:#2E8B57;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">View Dashboard</a>
+                        <a href="https://app.bondzy.com" style="background:#2E8B57;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">View Dashboard</a>
                       </div>
                     </div>
                     <div style="padding:16px;text-align:center;color:#8E99A4;font-size:12px;border-radius:0 0 12px 12px;">
