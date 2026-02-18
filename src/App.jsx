@@ -93,6 +93,7 @@ const fmtD=d=>new Date(d+"T00:00:00").toLocaleDateString("en-US",{weekday:"short
 const fmtT=t=>{const[h,m]=t.split(":");const hr=parseInt(h);return`${hr%12||12}:${m} ${hr>=12?"PM":"AM"}`;};
 const stC=s=>({active:{bg:B.bluL,tx:B.blu},redeemed:{bg:B.grnL,tx:B.grn},forfeit:{bg:B.redL,tx:B.red}}[s]||{bg:B.gryL,tx:B.gryD});
 const getDist=(a,b,c,d)=>{const R=6371000,dL=((c-a)*Math.PI)/180,dN=((d-b)*Math.PI)/180;const x=Math.sin(dL/2)**2+Math.cos((a*Math.PI)/180)*Math.cos((c*Math.PI)/180)*Math.sin(dN/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));};
+const isExpiredClient=(b)=>{if(b.status!=="active"||!b.date||!b.time)return false;const end=new Date(`${b.date}T${b.time}`).getTime()+(b.grace_minutes||10)*60000;return Date.now()>end;};
 
 // ========== HEADER ==========
 const Header = ({page,onNav,email}) => (
@@ -216,7 +217,7 @@ const Help = () => {
     {q:"Does the recipient need an account?",a:"Yes, to claim they need to sign up (just an email, no password). They get an email with a direct link."},
     {q:"What can I use as a reward?",a:"Anything with a URL! PayPal, Venmo, digital gift cards, promo codes, e-book downloads — get creative!"},
     {q:"What happens if they don't show up?",a:"The reward goes unclaimed and the Bondzy is marked as forfeit."},
-    {q:"How does GPS verification work?",a:"The recipient taps 'I'm Here.' Their browser checks GPS and we verify they're within ~500 feet of the target."},
+    {q:"How does GPS verification work?",a:"When the time window opens, the app automatically checks your GPS. You need to be within about 100 meters (~330 feet) of the target location. For Reward Bondzies, the recipient verifies. For Promise Bondzies, the creator verifies."},
     {q:"What are Promise Bondzies?",a:"A Promise Bondzy is your commitment to be somewhere. You specify WHO, WHERE, WHEN, and a PENALTY. If you don't verify GPS at the location on time, the penalty link is automatically sent to the other person. Think of it like a bail bond — it makes your word credible."},
     {q:"Is Bondzy free?",a:"During beta, yes! Receiving Bondzies will always be free."},
   ];
@@ -258,13 +259,18 @@ const Profile = ({email,profile,onLogout}) => (
 
 // ========== DASHBOARD ==========
 const Dash = ({bondzies,email,userId,onNav,onView,filter,setFilter,tab,setTab,loading}) => {
+  const [now,setNow]=useState(Date.now());
+  // Refresh every 30s to catch client-side expirations
+  useEffect(()=>{const t=setInterval(()=>setNow(Date.now()),30000);return()=>clearInterval(t);},[]);
+  
   const cr=bondzies.filter(b=>b.creator_id===userId);
   const rc=bondzies.filter(b=>b.recipient_email?.toLowerCase()===email?.toLowerCase()||b.recipient_id===userId);
-  // Avoid showing same bondzy in both tabs
   const rcFiltered=rc.filter(b=>b.creator_id!==userId);
   const act=tab==="created"?cr:rcFiltered;
-  const fl2=act.filter(b=>filter==="all"||b.status===filter).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
-  const ct={all:act.length,active:act.filter(b=>b.status==="active").length,redeemed:act.filter(b=>b.status==="redeemed").length,forfeit:act.filter(b=>b.status==="forfeit").length};
+  // Compute display status: if DB says active but time has passed, show as expired
+  const withDisplayStatus=act.map(b=>({...b,displayStatus:isExpiredClient(b)?"expired":b.status}));
+  const fl2=withDisplayStatus.filter(b=>filter==="all"||(filter==="forfeit"?b.displayStatus==="forfeit"||b.displayStatus==="expired":b.displayStatus===filter)).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  const ct={all:act.length,active:withDisplayStatus.filter(b=>b.displayStatus==="active").length,redeemed:withDisplayStatus.filter(b=>b.displayStatus==="redeemed").length,forfeit:withDisplayStatus.filter(b=>b.displayStatus==="forfeit"||b.displayStatus==="expired").length};
 
   return <div style={{maxWidth:800,margin:"0 auto",padding:"28px 20px 80px"}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,flexWrap:"wrap",gap:12}}>
@@ -283,13 +289,8 @@ const Dash = ({bondzies,email,userId,onNav,onView,filter,setFilter,tab,setTab,lo
     </div>
     {tab==="received"&&<div style={{background:`${B.gold}12`,border:`1px solid ${B.gold}30`,borderRadius:10,padding:"10px 14px",marginBottom:16,fontSize:13,color:B.goldD,fontWeight:500}}>🎁 Bondzies others created for you. Rewards to claim and promises made to you.</div>}
     <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:20}}>
-      {[{l:"Total",v:ct.all,c:B.navy},{l:"Active",v:ct.active,c:B.blu},{l:"Redeemed",v:ct.redeemed,c:B.grn},{l:"Forfeit",v:ct.forfeit,c:B.red}].map(s=>(
-        <div key={s.l} className="crd" style={{textAlign:"center",padding:14}}><div style={{fontSize:24,fontWeight:800,color:s.c}}>{s.v}</div><div style={{fontSize:11,color:B.gry,fontWeight:700}}>{s.l}</div></div>
-      ))}
-    </div>
-    <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
-      {["all","active","redeemed","forfeit"].map(f=>(
-        <button key={f} onClick={()=>setFilter(f)} style={{padding:"6px 14px",borderRadius:6,fontSize:12,fontWeight:700,cursor:"pointer",border:`1px solid ${filter===f?B.navy:B.bdr}`,background:filter===f?B.navy:B.wh,color:filter===f?"white":B.gryD,textTransform:"capitalize"}}>{f}</button>
+      {[{l:"Total",v:ct.all,c:B.navy,f:"all"},{l:"Active",v:ct.active,c:B.blu,f:"active"},{l:"Redeemed",v:ct.redeemed,c:B.grn,f:"redeemed"},{l:"Forfeit",v:ct.forfeit,c:B.red,f:"forfeit"}].map(s=>(
+        <div key={s.l} className="crd" onClick={()=>setFilter(s.f)} style={{textAlign:"center",padding:14,cursor:"pointer",border:filter===s.f?`2px solid ${s.c}`:`1px solid ${B.bdr}`,background:filter===s.f?`${s.c}08`:B.wh,transition:"all 0.15s"}}><div style={{fontSize:24,fontWeight:800,color:s.c}}>{s.v}</div><div style={{fontSize:11,color:filter===s.f?s.c:B.gry,fontWeight:700}}>{s.l}</div></div>
       ))}
     </div>
     {loading?(<div style={{textAlign:"center",padding:40}}><div style={{width:32,height:32,border:`3px solid ${B.gryL}`,borderTopColor:B.navy,borderRadius:"50%",margin:"0 auto 10px",animation:"spin 0.8s linear infinite"}}/><p style={{color:B.gryD}}>Loading...</p></div>
@@ -302,23 +303,23 @@ const Dash = ({bondzies,email,userId,onNav,onView,filter,setFilter,tab,setTab,lo
       </div>
     ):(
       <div style={{display:"flex",flexDirection:"column",gap:8}}>
-        {fl2.map((b,i)=>{const sc=stC(b.status);const isR=tab==="received";const isProm=b.type==="promise";return(
-          <div key={b.id} className="crd" onClick={()=>onView(b,isR?"recipient":"creator")} style={{cursor:"pointer",animation:`fadeIn 0.3s ease ${i*0.04}s both`,borderLeft:isR&&b.status==="active"?`4px solid ${isProm?B.gold:B.gold}`:undefined}}>
+        {fl2.map((b,i)=>{const ds=b.displayStatus;const sc=stC(ds==="expired"?"forfeit":ds);const isR=tab==="received";const isProm=b.type==="promise";const isActive=ds==="active";return(
+          <div key={b.id} className="crd" onClick={()=>onView(b,isR?"recipient":"creator")} style={{cursor:"pointer",animation:`fadeIn 0.3s ease ${i*0.04}s both`,borderLeft:isR&&isActive?`4px solid ${B.gold}`:undefined}}>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,flexWrap:"wrap"}}>
               <span style={{fontSize:16}}>{isR?(isProm?"🤝":"🎁"):(isProm?"🤝":"📤")}</span>
               <span style={{fontWeight:700,fontSize:15}}>{isR?`From ${(b.creator_email||"someone").split("@")[0]}`:`For ${b.recipient_name}`}</span>
               <span style={{background:isProm?`${B.gold}20`:sc.bg,color:isProm?B.goldD:sc.tx,padding:"2px 10px",borderRadius:6,fontSize:11,fontWeight:800,textTransform:"uppercase"}}>{isProm?"promise":"reward"}</span>
-              <span style={{background:sc.bg,color:sc.tx,padding:"2px 10px",borderRadius:6,fontSize:11,fontWeight:800,textTransform:"uppercase"}}>{b.status}</span>
-              {isR&&b.status==="active"&&!isProm&&<span style={{background:B.gold,color:"white",padding:"2px 8px",borderRadius:5,fontSize:10,fontWeight:800}}>CLAIM</span>}
-              {!isR&&b.status==="active"&&isProm&&<span style={{background:B.grn,color:"white",padding:"2px 8px",borderRadius:5,fontSize:10,fontWeight:800}}>CHECK IN</span>}
+              <span style={{background:sc.bg,color:sc.tx,padding:"2px 10px",borderRadius:6,fontSize:11,fontWeight:800,textTransform:"uppercase"}}>{ds==="expired"?"expired":ds}</span>
+              {isR&&isActive&&!isProm&&<span style={{background:B.gold,color:"white",padding:"2px 8px",borderRadius:5,fontSize:10,fontWeight:800}}>CLAIM</span>}
+              {!isR&&isActive&&isProm&&<span style={{background:B.grn,color:"white",padding:"2px 8px",borderRadius:5,fontSize:10,fontWeight:800}}>CHECK IN</span>}
             </div>
             <div style={{display:"flex",gap:16,fontSize:13,color:B.gryD,flexWrap:"wrap"}}>
               <span style={{display:"flex",alignItems:"center",gap:4}}><Ic name="pin" size={13} color={B.gry}/> {b.location_name}</span>
               <span style={{display:"flex",alignItems:"center",gap:4}}><Ic name="clock" size={13} color={B.gry}/> {fmtD(b.date)} · {fmtT(b.time)}</span>
             </div>
-            {isR&&b.status==="active"&&!isProm&&<div style={{marginTop:6,fontSize:12,color:B.goldD,fontWeight:600}}>Tap to verify & claim →</div>}
-            {!isR&&b.status==="active"&&isProm&&<div style={{marginTop:6,fontSize:12,color:B.grn,fontWeight:600}}>Tap to check in & keep your promise →</div>}
-            {isR&&b.status==="active"&&isProm&&<div style={{marginTop:6,fontSize:12,color:B.gryD,fontWeight:600}}>Waiting for {(b.creator_email||"creator").split("@")[0]} to check in</div>}
+            {isR&&isActive&&!isProm&&<div style={{marginTop:6,fontSize:12,color:B.goldD,fontWeight:600}}>Tap to verify & claim →</div>}
+            {!isR&&isActive&&isProm&&<div style={{marginTop:6,fontSize:12,color:B.grn,fontWeight:600}}>Tap to check in & keep your promise →</div>}
+            {isR&&isActive&&isProm&&<div style={{marginTop:6,fontSize:12,color:B.gryD,fontWeight:600}}>Waiting for {(b.creator_email||"creator").split("@")[0]} to check in</div>}
           </div>
         );})}
       </div>
@@ -643,7 +644,7 @@ const Detail = ({bz,onNav,onRedeem,role}) => {
         const dd=getDist(pos.coords.latitude,pos.coords.longitude,bz.location_lat,bz.location_lng);
         setD(Math.round(dd));
         setAcc(Math.round(pos.coords.accuracy));
-        setGps(dd<=150?"success":"far");
+        setGps(dd<=100?"success":"far");
       },
       e=>{setGps(e.code===1?"denied":"error");},
       {enableHighAccuracy:true,timeout:15000,maximumAge:0}
@@ -796,7 +797,7 @@ const Detail = ({bz,onNav,onRedeem,role}) => {
               <div style={{fontSize:32,marginBottom:12}}>📍</div>
               <p style={{fontSize:15,fontWeight:700,color:B.red,marginBottom:6}}>Not quite close enough</p>
               <p style={{fontSize:13,color:B.gryD,marginBottom:4}}>You're roughly {d>=1000?(d/1000).toFixed(1)+"km":d+"m"} away</p>
-              <p style={{fontSize:12,color:B.gry,marginBottom:16}}>Get within 150m of {bz.location_name}</p>
+              <p style={{fontSize:12,color:B.gry,marginBottom:16}}>Get within 100m of {bz.location_name}</p>
               <button className="btn bn" onClick={()=>{setGps("idle");setD(null);setGpsChecked(false);}}>📍 Check Location Again</button>
             </div>}
             
@@ -877,6 +878,9 @@ export default function BondzyApp() {
       setBzLoad(false);
     };
     load();
+    // Refresh every 60s to pick up cron job status changes
+    const interval=setInterval(load,60000);
+    return()=>clearInterval(interval);
   },[session]);
 
   // Handle shared Bondzy links (check URL parameters)
