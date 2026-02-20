@@ -232,7 +232,7 @@ const AuthPage = () => {
       </div>
     </div>
     <div style={{textAlign:"center",padding:"30px 20px",borderTop:`1px solid ${B.bdr}`,color:B.gry,fontSize:13}}>
-      <span style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:B.navy,display:"block",marginBottom:6}}>Bondzy</span>© 2026 · info@bondzy.com
+      <span style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:B.navy,display:"block",marginBottom:6}}>Bondzy</span>© 2026 · <a href="https://www.bondzy.com" target="_blank" rel="noopener noreferrer" style={{color:B.gry,textDecoration:"none"}} onMouseOver={e=>e.currentTarget.style.color=B.navy} onMouseOut={e=>e.currentTarget.style.color=B.gry}>www.bondzy.com</a> · info@bondzy.com
     </div>
   </div>;
 };
