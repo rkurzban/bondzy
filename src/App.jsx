@@ -403,6 +403,7 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
               sender:{name:'Bondzy',email:'info@bondzy.com'},
               to:[{email:f.recipientEmail,name:f.recipientName}],
               subject:isProm?`🤝 ${session.user.email.split("@")[0]} made you a Promise Bondzy!`:'🎁 Someone has a Reward Bondzy for you!',
+              textContent:isProm?`Hi ${f.recipientName}!\n\nSomeone made a Promise Bondzy to you — they're committing to be somewhere at a specific time. If they don't show up, you get the penalty!\n\nWho: ${session.user.email}\nWhere: ${f.locationName}\nWhen: ${formattedDate} at ${formattedTime}\nPenalty if no-show: ${f.rewardDescription.trim()||'Bondzy Penalty'}\n\nIf they don't verify their GPS at the location in time, you'll automatically receive the penalty link.\n\nOpen Bondzy: https://app.bondzy.com\n\n---\nBondzy — No More Hoping. Make Things Happen.\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`:`Hi ${f.recipientName}!\n\nSomeone buried a treasure for you using Bondzy! Show up at the right place and time to claim your reward.\n\nGo to: ${f.locationName}\nWhen: ${formattedDate} at ${formattedTime}\nGrace period: 10 minutes\nReward: ${f.rewardDescription.trim()||'Bondzy Reward'}\n\nOpen Bondzy at the right place and time, verify your GPS, and the treasure is yours!\n\nOpen Bondzy: https://app.bondzy.com\n\n---\nBondzy — No More Hoping. Make Things Happen.\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`,
               htmlContent:isProm?`
                 <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                   <div style="background:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
@@ -422,8 +423,10 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
                       <a href="https://app.bondzy.com" style="background:#D4A843;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">Open Bondzy</a>
                     </div>
                   </div>
-                  <div style="padding:16px;text-align:center;color:#8E99A4;font-size:12px;border-radius:0 0 12px 12px;">
-                    <p style="margin:0;">Bondzy — No More Hoping. Make Things Happen.</p>
+                  <div style="background:#F5F6F8;padding:20px 16px;text-align:center;color:#5A6570;font-size:12px;border-radius:0 0 12px 12px;">
+                    <p style="margin:0 0 8px;font-weight:600;">Bondzy — No More Hoping. Make Things Happen.</p>
+                    <p style="margin:0;line-height:1.5;">Bondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.</p>
+                    <p style="margin:8px 0 0;"><a href="https://www.bondzy.com" style="color:#1B2A4A;text-decoration:none;font-weight:600;">www.bondzy.com</a> · info@bondzy.com</p>
                   </div>
                 </div>`:`
                 <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
@@ -444,8 +447,10 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
                       <a href="https://app.bondzy.com" style="background:#D4A843;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">Open Bondzy</a>
                     </div>
                   </div>
-                  <div style="padding:16px;text-align:center;color:#8E99A4;font-size:12px;border-radius:0 0 12px 12px;">
-                    <p style="margin:0;">Bondzy — No More Hoping. Make Things Happen.</p>
+                  <div style="background:#F5F6F8;padding:20px 16px;text-align:center;color:#5A6570;font-size:12px;border-radius:0 0 12px 12px;">
+                    <p style="margin:0 0 8px;font-weight:600;">Bondzy — No More Hoping. Make Things Happen.</p>
+                    <p style="margin:0;line-height:1.5;">Bondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.</p>
+                    <p style="margin:8px 0 0;"><a href="https://www.bondzy.com" style="color:#1B2A4A;text-decoration:none;font-weight:600;">www.bondzy.com</a> · info@bondzy.com</p>
                   </div>
                 </div>`,
             }),
@@ -467,6 +472,7 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
               sender:{name:'Bondzy',email:'info@bondzy.com'},
               to:[{email:session.user.email}],
               subject:isProm?'🤝 Your Promise Bondzy is posted!':'✅ Your Bondzy is posted!',
+              textContent:`${isProm?"🤝 Promise Bondzy Posted!":"✅ Bondzy Posted Successfully!"}\n\n${isProm?`Your Promise Bondzy to ${f.recipientName} is now active. You must check in at the location on time, or they receive the penalty.`:`Your Reward Bondzy for ${f.recipientName} is now active. They've received an email notification.`}\n\nRecipient: ${f.recipientName} (${f.recipientEmail})\nLocation: ${f.locationName}\nDate & Time: ${formattedDate} at ${formattedTime}\n${isProm?"Penalty":"Reward"}: ${f.rewardDescription.trim()||(isProm?'Bondzy Penalty':'Bondzy Reward')}\n\n${isProm?`Remember to check in at ${f.locationName} on time!`:`We'll notify you when ${f.recipientName} redeems their Bondzy!`}\n\nView Dashboard: https://app.bondzy.com\n\n---\nBondzy — No More Hoping. Make Things Happen.\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`,
               htmlContent:`
                 <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                   <div style="background:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
@@ -486,8 +492,10 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
                       <a href="https://app.bondzy.com" style="background:#1B2A4A;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">View in Dashboard</a>
                     </div>
                   </div>
-                  <div style="padding:16px;text-align:center;color:#8E99A4;font-size:12px;border-radius:0 0 12px 12px;">
-                    <p style="margin:0;">Bondzy — No More Hoping. Make Things Happen.</p>
+                  <div style="background:#F5F6F8;padding:20px 16px;text-align:center;color:#5A6570;font-size:12px;border-radius:0 0 12px 12px;">
+                    <p style="margin:0 0 8px;font-weight:600;">Bondzy — No More Hoping. Make Things Happen.</p>
+                    <p style="margin:0;line-height:1.5;">Bondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.</p>
+                    <p style="margin:8px 0 0;"><a href="https://www.bondzy.com" style="color:#1B2A4A;text-decoration:none;font-weight:600;">www.bondzy.com</a> · info@bondzy.com</p>
                   </div>
                 </div>`,
             }),
@@ -977,6 +985,7 @@ export default function BondzyApp() {
                   sender:{name:'Bondzy',email:'info@bondzy.com'},
                   to:[{email:recipientEmail,name:redeemedBondzy.recipient_name}],
                   subject:`✅ ${(redeemedBondzy.creator_email||"Someone").split("@")[0]} kept their promise!`,
+                  textContent:`Good news, ${redeemedBondzy.recipient_name}!\n\n${(redeemedBondzy.creator_email||"Someone").split("@")[0]} checked in and kept their Promise Bondzy.\n\nLocation: ${redeemedBondzy.location_name}\nScheduled: ${formattedDate} at ${formattedTime}\nChecked in: ${checkedInAt}\n\nThe commitment was honored — no penalty triggered.\n\nView on Bondzy: https://app.bondzy.com\n\n---\nBondzy — No More Hoping. Make Things Happen.\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`,
                   htmlContent:`
                     <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                       <div style="background:#2E8B57;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
@@ -995,8 +1004,10 @@ export default function BondzyApp() {
                           <a href="https://app.bondzy.com" style="background:#2E8B57;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">View on Bondzy</a>
                         </div>
                       </div>
-                      <div style="padding:16px;text-align:center;color:#8E99A4;font-size:12px;">
-                        <p style="margin:0;">Bondzy — No More Hoping. Make Things Happen.</p>
+                      <div style="background:#F5F6F8;padding:20px 16px;text-align:center;color:#5A6570;font-size:12px;border-radius:0 0 12px 12px;">
+                        <p style="margin:0 0 8px;font-weight:600;">Bondzy — No More Hoping. Make Things Happen.</p>
+                        <p style="margin:0;line-height:1.5;">Bondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.</p>
+                        <p style="margin:8px 0 0;"><a href="https://www.bondzy.com" style="color:#1B2A4A;text-decoration:none;font-weight:600;">www.bondzy.com</a> · info@bondzy.com</p>
                       </div>
                     </div>`,
                 }),
@@ -1016,6 +1027,7 @@ export default function BondzyApp() {
                 sender:{name:'Bondzy',email:'info@bondzy.com'},
                 to:[{email:creatorEmail}],
                 subject:`🎉 ${redeemedBondzy.recipient_name} claimed your Bondzy!`,
+                textContent:`Success! ${redeemedBondzy.recipient_name} showed up!\n\n${redeemedBondzy.recipient_name} successfully redeemed their Bondzy reward.\n\nLocation: ${redeemedBondzy.location_name}\nScheduled: ${formattedDate} at ${formattedTime}\nClaimed: ${redeemedAt}\nReward: ${redeemedBondzy.reward_description}\n\nYour Bondzy worked! They were in the right place at the right time.\n\nView Dashboard: https://app.bondzy.com\n\n---\nBondzy — No More Hoping. Make Things Happen.\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`,
                 htmlContent:`
                   <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                     <div style="background:#2E8B57;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
@@ -1035,8 +1047,10 @@ export default function BondzyApp() {
                         <a href="https://app.bondzy.com" style="background:#2E8B57;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">View Dashboard</a>
                       </div>
                     </div>
-                    <div style="padding:16px;text-align:center;color:#8E99A4;font-size:12px;border-radius:0 0 12px 12px;">
-                      <p style="margin:0;">Bondzy — No More Hoping. Make Things Happen.</p>
+                    <div style="background:#F5F6F8;padding:20px 16px;text-align:center;color:#5A6570;font-size:12px;border-radius:0 0 12px 12px;">
+                      <p style="margin:0 0 8px;font-weight:600;">Bondzy — No More Hoping. Make Things Happen.</p>
+                      <p style="margin:0;line-height:1.5;">Bondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.</p>
+                      <p style="margin:8px 0 0;"><a href="https://www.bondzy.com" style="color:#1B2A4A;text-decoration:none;font-weight:600;">www.bondzy.com</a> · info@bondzy.com</p>
                     </div>
                   </div>`,
               }),
