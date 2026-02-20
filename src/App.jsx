@@ -191,14 +191,43 @@ const AuthPage = () => {
         ))}
       </div>
     </div>
-    <div style={{background:B.wh,padding:"50px 20px",borderTop:`1px solid ${B.bdr}`}}>
-      <div style={{maxWidth:700,margin:"0 auto",textAlign:"center"}}>
-        <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:26,marginBottom:8}}>How Will You Use Bondzy?</h2>
-        <p style={{color:B.gryD,marginBottom:28,fontSize:15}}>Some call them bribes. We call them Bondzies.</p>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:12}}>
-          {["💪 Get someone to the gym","👩‍⚕️ Doctor's appointments","📚 Study sessions","🎹 Piano lessons for kids","🤝 AA or support meetings","💆 Self-care & spa days"].map((u,i)=>(
-            <div key={i} style={{background:B.off,padding:"14px 16px",borderRadius:10,fontSize:14,fontWeight:600,border:`1px solid ${B.bdr}`}}>{u}</div>
+    {/* HOW PROMISE BONDZIES WORK SECTION */}
+    <div style={{background:B.off,padding:"50px 20px",borderTop:`1px solid ${B.bdr}`}}>
+      <div style={{maxWidth:800,margin:"0 auto"}}>
+        <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,textAlign:"center",marginBottom:10}}>How Promise Bondzies Work</h2>
+        <p style={{textAlign:"center",color:B.gryD,marginBottom:36,fontSize:15}}>You said you'd be there. Now back it up.</p>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:16}}>
+          {[{ic:"shield",s:"1",t:"Set a Penalty",d:"A PayPal link, gift card, promo code — what you put on the line if you don't show up."},{ic:"user",s:"2",t:"Name Who You Promised",d:"The person you made the commitment to. Enter their email."},{ic:"pin",s:"3",t:"Set the Place & Time",d:"Where you said you'd be and when."},{ic:"nav",s:"4",t:"GPS Verifies You",d:"Show up and tap Verify. Don't show up, and they get the penalty."}].map((s,i)=>(
+            <div key={i} className="crd" style={{textAlign:"center",padding:"28px 16px",animation:`fadeIn 0.5s ease ${i*0.1}s both`}}>
+              <div style={{width:44,height:44,borderRadius:12,background:B.navy,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px"}}><Ic name={s.ic} size={22} color={B.gold}/></div>
+              <div style={{fontSize:11,fontWeight:800,color:B.gold,marginBottom:6,letterSpacing:1}}>STEP {s.s}</div>
+              <h3 style={{fontSize:15,fontWeight:700,marginBottom:6}}>{s.t}</h3>
+              <p style={{fontSize:13,color:B.gryD,lineHeight:1.5}}>{s.d}</p>
+            </div>
           ))}
+        </div>
+      </div>
+    </div>
+
+    {/* USE CASES SECTION */}
+    <div style={{background:B.wh,padding:"50px 20px",borderTop:`1px solid ${B.bdr}`}}>
+      <div style={{maxWidth:760,margin:"0 auto",textAlign:"center"}}>
+        <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:26,marginBottom:8}}>How Will You Use Bondzy?</h2>
+        <p style={{color:B.gryD,marginBottom:4,fontSize:15}}>Some call them bribes. We call them Bondzies.</p>
+        <p style={{color:B.gryD,marginBottom:36,fontSize:13}}>Motivating someone else to show up? → <strong>Reward Bondzy.</strong> Made a promise to be somewhere for someone? → <strong>Promise Bondzy.</strong></p>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:24,textAlign:"left"}}>
+          <div>
+            <div style={{fontSize:13,fontWeight:800,color:B.gold,letterSpacing:1,marginBottom:12}}>🎁 REWARD BONDZIES — for motivating others</div>
+            {["💪 Get someone to the gym","👩‍⚕️ Doctor's appointments","🎹 Piano lessons for kids","🤝 AA or support meetings"].map((u,i)=>(
+              <div key={i} style={{background:B.off,padding:"12px 16px",borderRadius:10,fontSize:14,fontWeight:600,border:`1px solid ${B.bdr}`,marginBottom:8}}>{u}</div>
+            ))}
+          </div>
+          <div>
+            <div style={{fontSize:13,fontWeight:800,color:B.gold,letterSpacing:1,marginBottom:12}}>🤝 PROMISE BONDZIES — when your word is on the line</div>
+            {["🎭 Show up to a friend's performance","🔧 The contractor who actually arrives","👨‍👧 Make it to the school play","🤝 The meeting you won't cancel"].map((u,i)=>(
+              <div key={i} style={{background:B.off,padding:"12px 16px",borderRadius:10,fontSize:14,fontWeight:600,border:`1px solid ${B.bdr}`,marginBottom:8}}>{u}</div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
