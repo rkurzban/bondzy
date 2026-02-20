@@ -912,6 +912,16 @@ export default function BondzyApp() {
     return()=>clearInterval(interval);
   },[session]);
 
+  // Write expired active Bondzies back to DB as forfeit
+  useEffect(()=>{
+    const expired=bondzies.filter(b=>isExpiredClient(b));
+    if(!expired.length)return;
+    const ids=expired.map(b=>b.id);
+    supabase.from("bondzies").update({status:"forfeit"}).in("id",ids).then(()=>{
+      setBondzies(prev=>prev.map(b=>ids.includes(b.id)?{...b,status:"forfeit"}:b));
+    });
+  },[bondzies]);
+
   // Handle shared Bondzy links (check URL parameters)
   useEffect(()=>{
     if(!session||bondzies.length===0)return;
