@@ -359,15 +359,18 @@ const Dash = ({bondzies,email,userId,onNav,onView,filter,setFilter,tab,setTab,lo
 };
 
 // ========== CREATE BONDZY ==========
+const DRAFT_KEY="bondzy_create_draft";
 const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
   const isProm=createType==="promise";
-  const [step,setStep]=useState(1);
+  const savedDraft=(()=>{try{const s=localStorage.getItem(DRAFT_KEY);if(s){const p=JSON.parse(s);if(p.createType===createType)return p;}}catch{}return null;})();
+  const [step,setStep]=useState(savedDraft?.step||1);
   const [err,setErr]=useState({});
   const [sug,setSug]=useState([]);
   const [showS,setShowS]=useState(false);
-  const [selP,setSelP]=useState(null);
+  const [selP,setSelP]=useState(savedDraft?.selP||null);
   const [saving,setSaving]=useState(false);
-  const [f,sF]=useState({recipientName:"",recipientEmail:"",locationSearch:"",locationName:"",locationAddress:"",locationLat:null,locationLng:null,date:"",time:"",rewardValue:"",rewardDescription:""});
+  const [f,sF]=useState(savedDraft?.f||{recipientName:"",recipientEmail:"",locationSearch:"",locationName:"",locationAddress:"",locationLat:null,locationLng:null,date:"",time:"",rewardValue:"",rewardDescription:""});
+  useEffect(()=>{try{localStorage.setItem(DRAFT_KEY,JSON.stringify({createType,step,f,selP}));}catch{}},[createType,step,f,selP]);
 
   const up=(k,v)=>{sF(p=>({...p,[k]:v}));setErr(e=>({...e,[k]:undefined}));};
   const locS=q=>{up("locationSearch",q);if(selP){setSelP(null);sF(p=>({...p,locationName:"",locationAddress:"",locationLat:null,locationLng:null}));}searchPlaces(q,(results)=>{setSug(results);setShowS(results.length>0);});};
@@ -506,6 +509,7 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
         }
       }catch(emailErr){console.log("Creator confirmation email failed:",emailErr);}
       
+      try{localStorage.removeItem(DRAFT_KEY);}catch{}
       onCreate(data);
     }
   };
