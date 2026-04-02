@@ -79,6 +79,7 @@ const Ic = ({name,size=20,color="currentColor"}) => {
     chev:<path d="M6 9l6 6 6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
     logout:<><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" strokeWidth="2"/><polyline points="16 17 21 12 16 7" strokeWidth="2"/><line x1="21" y1="12" x2="9" y2="12" strokeWidth="2"/></>,
     mail:<><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" strokeWidth="2"/><path d="M22 6l-10 7L2 6" strokeWidth="2" strokeLinecap="round"/></>,
+    shield:<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} xmlns="http://www.w3.org/2000/svg">{d[name]}</svg>;
 };
@@ -94,6 +95,7 @@ const fmtT=t=>{const[h,m]=t.split(":");const hr=parseInt(h);return`${hr%12||12}:
 const stC=s=>({active:{bg:B.bluL,tx:B.blu},redeemed:{bg:B.grnL,tx:B.grn},forfeit:{bg:B.redL,tx:B.red}}[s]||{bg:B.gryL,tx:B.gryD});
 const getDist=(a,b,c,d)=>{const R=6371000,dL=((c-a)*Math.PI)/180,dN=((d-b)*Math.PI)/180;const x=Math.sin(dL/2)**2+Math.cos((a*Math.PI)/180)*Math.cos((c*Math.PI)/180)*Math.sin(dN/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));};
 const isExpiredClient=(b)=>{if(b.status!=="active"||!b.date||!b.time)return false;const end=new Date(`${b.date}T${b.time}`).getTime()+(b.grace_minutes||10)*60000;return Date.now()>end;};
+const isURL=s=>/^https?:\/\//i.test(s||"");
 
 // ========== HEADER ==========
 const Header = ({page,onNav,email}) => (
@@ -181,7 +183,7 @@ const AuthPage = () => {
       <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,textAlign:"center",marginBottom:10}}>How Reward Bondzies Work</h2>
       <p style={{textAlign:"center",color:B.gryD,marginBottom:36,fontSize:15}}>Think of it like burying a treasure for someone to find.</p>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:16}}>
-        {[{ic:"gift",s:"1",t:"Pick a Reward",d:"A PayPal link, gift card, promo code — any URL."},{ic:"user",s:"2",t:"Name the Person",d:"Who needs to show up? Enter their email."},{ic:"pin",s:"3",t:"Set Place & Time",d:"Where and when they need to be there."},{ic:"nav",s:"4",t:"GPS Verifies",d:"They show up, tap Redeem, get the treasure!"}].map((s,i)=>(
+        {[{ic:"gift",s:"1",t:"Pick a Reward",d:"A PayPal link, gift card, promo code, or anything of value."},{ic:"user",s:"2",t:"Name the Person",d:"Who needs to show up? Enter their email."},{ic:"pin",s:"3",t:"Set Place & Time",d:"Where and when they need to be there."},{ic:"nav",s:"4",t:"GPS Verifies",d:"They show up, tap Redeem, get the treasure!"}].map((s,i)=>(
           <div key={i} className="crd" style={{textAlign:"center",padding:"28px 16px",animation:`fadeIn 0.5s ease ${i*0.1}s both`}}>
             <div style={{width:44,height:44,borderRadius:12,background:B.navy,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px"}}><Ic name={s.ic} size={22} color={B.gold}/></div>
             <div style={{fontSize:11,fontWeight:800,color:B.gold,marginBottom:6,letterSpacing:1}}>STEP {s.s}</div>
@@ -197,7 +199,7 @@ const AuthPage = () => {
         <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,textAlign:"center",marginBottom:10}}>How Promise Bondzies Work</h2>
         <p style={{textAlign:"center",color:B.gryD,marginBottom:36,fontSize:15}}>You said you'd be there. Now back it up.</p>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:16}}>
-          {[{ic:"shield",s:"1",t:"Set a Penalty",d:"A PayPal link, gift card, promo code — what you put on the line if you don't show up."},{ic:"user",s:"2",t:"Name Who You Promised",d:"The person you made the commitment to. Enter their email."},{ic:"pin",s:"3",t:"Set the Place & Time",d:"Where you said you'd be and when."},{ic:"nav",s:"4",t:"GPS Verifies You",d:"Show up and tap Verify. Don't show up, and they get the penalty."}].map((s,i)=>(
+          {[{ic:"shield",s:"1",t:"Set a Penalty",d:"A PayPal link, gift card, promo code — whatever you put on the line if you don't show up."},{ic:"user",s:"2",t:"Name Who You Promised",d:"The person you made the commitment to. Enter their email."},{ic:"pin",s:"3",t:"Set the Place & Time",d:"Where you said you'd be and when."},{ic:"nav",s:"4",t:"GPS Verifies You",d:"Show up and tap Verify. Don't show up, and they get the penalty."}].map((s,i)=>(
             <div key={i} className="crd" style={{textAlign:"center",padding:"28px 16px",animation:`fadeIn 0.5s ease ${i*0.1}s both`}}>
               <div style={{width:44,height:44,borderRadius:12,background:B.navy,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px"}}><Ic name={s.ic} size={22} color={B.gold}/></div>
               <div style={{fontSize:11,fontWeight:800,color:B.gold,marginBottom:6,letterSpacing:1}}>STEP {s.s}</div>
@@ -244,7 +246,7 @@ const Help = () => {
     {q:"What are Bondzies?",a:"A Reward Bondzy lets you bury a treasure — a link to a reward — that someone can only claim by being at a specific place at a specific time."},
     {q:"How do Reward Bondzies work?",a:"You specify WHO, WHERE, WHEN, and WHAT (a reward link). We email the recipient. If they show up and verify GPS, they get the reward!"},
     {q:"Does the recipient need an account?",a:"Yes, to claim they need to sign up (just an email, no password). They get an email with a direct link."},
-    {q:"What can I use as a reward?",a:"Anything with a URL! PayPal, Venmo, digital gift cards, promo codes, e-book downloads — get creative!"},
+    {q:"What can I use as a reward?",a:"Anything of value! PayPal or Venmo links, digital gift card URLs, promo codes, passwords to a download — get creative. If it's a link, the recipient gets a clickable button. If it's a code or text, they get a copy button."},
     {q:"What happens if they don't show up?",a:"The reward goes unclaimed and the Bondzy is marked as forfeit."},
     {q:"How does GPS verification work?",a:"When the time window opens, the app automatically checks your GPS. You need to be within about 100 meters (~330 feet) of the target location. For Reward Bondzies, the recipient verifies. For Promise Bondzies, the creator verifies."},
     {q:"What are Promise Bondzies?",a:"A Promise Bondzy is your commitment to be somewhere. You specify WHO, WHERE, WHEN, and a PENALTY. If you don't verify GPS at the location on time, the penalty link is automatically sent to the other person. Think of it like a bail bond — it makes your word credible."},
@@ -357,15 +359,18 @@ const Dash = ({bondzies,email,userId,onNav,onView,filter,setFilter,tab,setTab,lo
 };
 
 // ========== CREATE BONDZY ==========
+const DRAFT_KEY="bondzy_create_draft";
 const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
   const isProm=createType==="promise";
-  const [step,setStep]=useState(1);
+  const savedDraft=(()=>{try{const s=localStorage.getItem(DRAFT_KEY);if(s){const p=JSON.parse(s);if(p.createType===createType)return p;}}catch{}return null;})();
+  const [step,setStep]=useState(savedDraft?.step||1);
   const [err,setErr]=useState({});
   const [sug,setSug]=useState([]);
   const [showS,setShowS]=useState(false);
-  const [selP,setSelP]=useState(null);
+  const [selP,setSelP]=useState(savedDraft?.selP||null);
   const [saving,setSaving]=useState(false);
-  const [f,sF]=useState({recipientName:"",recipientEmail:"",locationSearch:"",locationName:"",locationAddress:"",locationLat:null,locationLng:null,date:"",time:"",rewardLink:"",rewardDescription:""});
+  const [f,sF]=useState(savedDraft?.f||{recipientName:"",recipientEmail:"",locationSearch:"",locationName:"",locationAddress:"",locationLat:null,locationLng:null,date:"",time:"",rewardValue:"",rewardDescription:""});
+  useEffect(()=>{try{localStorage.setItem(DRAFT_KEY,JSON.stringify({createType,step,f,selP}));}catch{}},[createType,step,f,selP]);
 
   const up=(k,v)=>{sF(p=>({...p,[k]:v}));setErr(e=>({...e,[k]:undefined}));};
   const locS=q=>{up("locationSearch",q);if(selP){setSelP(null);sF(p=>({...p,locationName:"",locationAddress:"",locationLat:null,locationLng:null}));}searchPlaces(q,(results)=>{setSug(results);setShowS(results.length>0);});};
@@ -373,7 +378,7 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
 
   const v1=()=>{const e={};if(!f.recipientName.trim())e.recipientName="Required";if(!f.recipientEmail.includes("@"))e.recipientEmail="Valid email required";setErr(e);return!Object.keys(e).length;};
   const v2=()=>{const e={};if(!f.locationLat)e.location="Select a location";if(!f.date)e.date="Required";if(!f.time)e.time="Required";setErr(e);return!Object.keys(e).length;};
-  const v3=()=>{const e={};if(!f.rewardLink.trim())e.rewardLink="Required";setErr(e);return!Object.keys(e).length;};
+  const v3=()=>{const e={};if(!f.rewardValue.trim())e.rewardValue="Required";setErr(e);return!Object.keys(e).length;};
 
   const sub=async()=>{
     if(!v3())return;
@@ -385,7 +390,7 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
       location_name:f.locationName,location_address:f.locationAddress||"",
       location_lat:f.locationLat,location_lng:f.locationLng,
       date:f.date,time:f.time,grace_minutes:10,
-      reward_link:f.rewardLink,reward_description:f.rewardDescription.trim()||(isProm?"Bondzy Penalty":"Bondzy Reward"),
+      reward_link:f.rewardValue,reward_description:f.rewardDescription.trim()||(isProm?"Bondzy Penalty":"Bondzy Reward"),
     }).select().single();
     setSaving(false);
     if(error){setErr({submit:error.message});}
@@ -504,6 +509,7 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
         }
       }catch(emailErr){console.log("Creator confirmation email failed:",emailErr);}
       
+      try{localStorage.removeItem(DRAFT_KEY);}catch{}
       onCreate(data);
     }
   };
@@ -560,7 +566,7 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
         <button className="btn bn" style={{width:"100%"}} onClick={()=>v2()&&setStep(3)}>{isProm?"Next: Set the Penalty →":"Next: Set the Reward →"}</button>
       </>}
       {step===3&&<>
-        <div style={fw}><label style={ls}>{isProm?"Penalty Link (sent if you don't show up)":"Reward Link (the \"buried treasure\")"}</label>{er2(err.rewardLink)}<input className="inp" placeholder={isProm?"e.g. https://paypal.me/yourname/50":"e.g. https://paypal.me/yourname/25"} value={f.rewardLink} onChange={e=>up("rewardLink",e.target.value)}/></div>
+        <div style={fw}><label style={ls}>{isProm?"Penalty (link, promo code, or anything of value)":"Reward (link, promo code, or anything of value)"}</label>{er2(err.rewardValue)}<input className="inp" placeholder={isProm?"e.g. https://paypal.me/yourname/50 or DISCOUNT50":"e.g. https://paypal.me/yourname/25 or GYMPASS2025"} value={f.rewardValue} onChange={e=>up("rewardValue",e.target.value)}/></div>
         <div style={fw}><label style={ls}>{isProm?"Describe the Penalty":"Describe the Reward"} <span style={{fontWeight:400,color:B.gry}}>(optional)</span></label><textarea className="inp" placeholder={isProm?"e.g. $50 off your next service if I'm late":"e.g. $25 PayPal for hitting the gym!"} value={f.rewardDescription} onChange={e=>up("rewardDescription",e.target.value)} style={{minHeight:60,resize:"vertical"}}/></div>
         <div style={{background:B.off,borderRadius:10,padding:16,marginBottom:20,fontSize:13,lineHeight:1.7,border:`1px solid ${B.bdr}`}}>
           <div style={{fontWeight:800,fontSize:11,color:B.gry,marginBottom:6,letterSpacing:0.5}}>{isProm?"PROMISE SUMMARY":"BONDZY SUMMARY"}</div>
@@ -583,6 +589,7 @@ const Detail = ({bz,onNav,onRedeem,role}) => {
   const [d,setD]=useState(null);
   const [acc,setAcc]=useState(null);
   const [cop,setCop]=useState(false);
+  const [copR,setCopR]=useState(false);
   const [conf,setConf]=useState(bz.status==="redeemed"&&(role==="recipient"||(bz.type==="promise"&&role==="creator")));
   const [redeeming,setRedeeming]=useState(false);
   const [now,setNow]=useState(new Date());
@@ -740,17 +747,27 @@ const Detail = ({bz,onNav,onRedeem,role}) => {
           </div>
         ))}
 
-        {/* REWARD: RECIPIENT - REDEEMED → show reward link */}
+        {/* REWARD: RECIPIENT - REDEEMED → show reward value */}
         {!isProm&&isR&&bz.status==="redeemed"&&<div style={{background:B.grnL,borderRadius:10,padding:16,marginTop:4,textAlign:"center"}}>
           <div style={{fontSize:13,fontWeight:700,color:B.grn,marginBottom:6}}>🎉 YOUR REWARD</div>
-          <a href={bz.reward_link} target="_blank" rel="noopener noreferrer" style={{color:B.grn,fontWeight:600,wordBreak:"break-all",fontSize:14}}>{bz.reward_link}</a>
+          {isURL(bz.reward_link)
+            ?<a href={bz.reward_link} target="_blank" rel="noopener noreferrer" style={{color:B.grn,fontWeight:600,wordBreak:"break-all",fontSize:14}}>{bz.reward_link}</a>
+            :<div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,flexWrap:"wrap"}}>
+              <span style={{fontWeight:700,fontSize:16,color:B.grn,wordBreak:"break-all"}}>{bz.reward_link}</span>
+              <button className="btn bo" style={{fontSize:12,padding:"4px 10px",flexShrink:0}} onClick={()=>{navigator.clipboard?.writeText(bz.reward_link);setCopR(true);setTimeout(()=>setCopR(false),2000);}}><Ic name="copy" size={13}/>{copR?" Copied!":" Copy"}</button>
+            </div>}
         </div>}
 
-        {/* PROMISE: RECIPIENT - FORFEIT → show penalty link (creator didn't show) */}
+        {/* PROMISE: RECIPIENT - FORFEIT → show penalty value (creator didn't show) */}
         {isProm&&isR&&bz.status==="forfeit"&&<div style={{background:B.redL,borderRadius:10,padding:16,marginTop:4,textAlign:"center"}}>
           <div style={{fontSize:13,fontWeight:700,color:B.red,marginBottom:6}}>⚠️ PENALTY — THEY DIDN'T SHOW</div>
           <p style={{fontSize:13,color:B.gryD,marginBottom:10}}>{(bz.creator_email||"The creator").split("@")[0]} didn't check in on time. The penalty is yours:</p>
-          <a href={bz.reward_link} target="_blank" rel="noopener noreferrer" style={{color:B.red,fontWeight:600,wordBreak:"break-all",fontSize:14}}>{bz.reward_link}</a>
+          {isURL(bz.reward_link)
+            ?<a href={bz.reward_link} target="_blank" rel="noopener noreferrer" style={{color:B.red,fontWeight:600,wordBreak:"break-all",fontSize:14}}>{bz.reward_link}</a>
+            :<div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,flexWrap:"wrap"}}>
+              <span style={{fontWeight:700,fontSize:16,color:B.red,wordBreak:"break-all"}}>{bz.reward_link}</span>
+              <button className="btn bo" style={{fontSize:12,padding:"4px 10px",flexShrink:0}} onClick={()=>{navigator.clipboard?.writeText(bz.reward_link);setCopR(true);setTimeout(()=>setCopR(false),2000);}}><Ic name="copy" size={13}/>{copR?" Copied!":" Copy"}</button>
+            </div>}
         </div>}
 
         {/* PROMISE: RECIPIENT - REDEEMED → promise was kept, no link */}
