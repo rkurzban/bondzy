@@ -584,7 +584,7 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
 
 // ========== DETAIL ==========
 // ========== DETAIL (UPDATED WITH TIME WINDOWS) ==========
-const Detail = ({bz,onNav,onRedeem,role}) => {
+const Detail = ({bz,onNav,onRedeem,role,isPublic=false}) => {
   const [gps,setGps]=useState("idle");
   const [d,setD]=useState(null);
   const [acc,setAcc]=useState(null);
@@ -703,8 +703,8 @@ const Detail = ({bz,onNav,onRedeem,role}) => {
   };
 
   return <div style={{maxWidth:580,margin:"0 auto",padding:"28px 20px 80px"}}>
-    <button onClick={()=>onNav("dashboard")} style={{background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:4,color:B.gryD,fontSize:14,fontWeight:600,marginBottom:20}}>
-      <Ic name="back" size={16}/> My Bondzies
+    <button onClick={()=>onNav(isPublic?"landing":"dashboard")} style={{background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:4,color:B.gryD,fontSize:14,fontWeight:600,marginBottom:20}}>
+      <Ic name="back" size={16}/> {isPublic?"Get Bondzy":"My Bondzies"}
     </button>
     
     {conf&&<div style={{textAlign:"center",marginBottom:16}}>
@@ -903,10 +903,29 @@ export default function BondzyApp() {
     setSel(null);window.scrollTo(0,0);
   };
 
+  const loadPublicRewardBondzy=async(id)=>{
+    const{data}=await supabase.from("bondzies").select("*").eq("id",id).eq("type","reward").single();
+    if(data){
+      setSel(data);setRole("recipient");setPg("public-detail");
+      window.history.replaceState(null,"",window.location.origin);
+    }else{
+      setPg("landing");
+    }
+  };
+
   // Auth listener
   useEffect(()=>{
+    const urlParams=new URLSearchParams(window.location.search);
+    const sharedBondzyId=urlParams.get('bondzy');
     supabase.auth.getSession().then(({data:{session:s}})=>{
-      setSession(s);setPg(s?"dashboard":"landing");
+      setSession(s);
+      if(s){
+        setPg("dashboard"); // shared link handler takes over once bondzies load
+      }else if(sharedBondzyId){
+        loadPublicRewardBondzy(sharedBondzyId);
+      }else{
+        setPg("landing");
+      }
     });
     const{data:{subscription}}=supabase.auth.onAuthStateChange((_ev,s)=>{
       setSession(s);
@@ -978,7 +997,7 @@ export default function BondzyApp() {
     const now=new Date().toISOString();
     const{error}=await supabase.from("bondzies").update({status:"redeemed",redeemed_at:now}).eq("id",id);
     if(!error){
-      const redeemedBondzy=bondzies.find(b=>b.id===id);
+      const redeemedBondzy=bondzies.find(b=>b.id===id)||sel;
       setBondzies(prev=>prev.map(b=>b.id===id?{...b,status:"redeemed",redeemed_at:now}:b));
       setSel(prev=>prev?{...prev,status:"redeemed",redeemed_at:now}:prev);
       const isProm=redeemedBondzy?.type==="promise";
@@ -1093,6 +1112,7 @@ export default function BondzyApp() {
     {pg==="dashboard"&&<Dash bondzies={bondzies} email={email} userId={userId} onNav={nav} filter={df} setFilter={setDf} tab={dt} setTab={setDt} loading={bzLoad} onView={(b,r)=>{setSel(b);setRole(r);setPg("detail");}}/>}
     {pg==="create"&&<Create onNav={nav} userId={userId} onCreate={handleCreate} session={session} createType={createType}/>}
     {pg==="detail"&&sel&&<Detail bz={sel} onNav={nav} onRedeem={handleRedeem} role={role}/>}
+    {pg==="public-detail"&&sel&&<Detail bz={sel} onNav={nav} onRedeem={handleRedeem} role={role} isPublic={true}/>}
     {pg==="help"&&<Help/>}
     {pg==="profile"&&<Profile email={email} profile={profile} onLogout={handleLogout}/>}
     {toast&&<div className="toast">{toast}</div>}
