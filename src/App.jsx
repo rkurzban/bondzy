@@ -117,126 +117,197 @@ const Header = ({page,onNav,email}) => (
   </div>
 );
 
-// ========== AUTH (Magic Link) ==========
-const AuthPage = () => {
-  const [email,setEmail]=useState("");
-  const [sent,setSent]=useState(false);
-  const [loading,setLoading]=useState(false);
-  const [err,setErr]=useState("");
-  const go = async()=>{
+// ========== AUTH FORM (shared between hero + bottom CTA) ==========
+const AuthForm=({email,setEmail,sent,setSent,loading,err,go,signInWithGoogle})=>{
+  if(sent)return(
+    <div style={{maxWidth:420,margin:"0 auto",background:"rgba(255,255,255,0.1)",borderRadius:12,padding:24,animation:"fadeIn 0.3s ease",textAlign:"center"}}>
+      <div style={{fontSize:32,marginBottom:12}}>📧</div>
+      <h2 style={{fontSize:20,marginBottom:8,color:"white"}}>Check your email!</h2>
+      <p style={{fontSize:15,opacity:0.85,lineHeight:1.6,color:"white"}}>We sent a magic link to <strong>{email}</strong>. Click it to sign in.</p>
+      <p style={{fontSize:13,opacity:0.6,marginTop:12,color:"white"}}>Don't see it? Check your spam folder.</p>
+      <button onClick={()=>setSent(false)} className="btn bo" style={{marginTop:16,borderColor:"rgba(255,255,255,0.3)",color:"white"}}>Try a different email</button>
+    </div>
+  );
+  return(
+    <div style={{maxWidth:420,margin:"0 auto"}}>
+      <button onClick={signInWithGoogle} style={{width:"100%",background:"white",color:"#1f1f1f",border:"none",borderRadius:8,padding:"12px 24px",fontSize:15,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:10,marginBottom:10,transition:"all 0.2s"}} onMouseOver={e=>e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,0.2)"} onMouseOut={e=>e.currentTarget.style.boxShadow="none"}>
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+        Continue with Google
+      </button>
+      <p style={{fontSize:12,opacity:0.6,marginBottom:14,color:"white",textAlign:"center"}}>Frequent user? →</p>
+      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
+        <div style={{flex:1,height:1,background:"rgba(255,255,255,0.2)"}}/>
+        <span style={{fontSize:13,opacity:0.5,color:"white"}}>or use email</span>
+        <div style={{flex:1,height:1,background:"rgba(255,255,255,0.2)"}}/>
+      </div>
+      <div style={{display:"flex",gap:10,flexWrap:"wrap",justifyContent:"center"}}>
+        <input type="email" placeholder="your@email.com" value={email} onChange={e=>{setEmail(e.target.value);}} onKeyDown={e=>e.key==="Enter"&&go()} className="inp" style={{flex:1,minWidth:210,textAlign:"center",borderColor:"rgba(255,255,255,0.25)",background:"rgba(255,255,255,0.1)",color:"white"}}/>
+        <button onClick={go} className="btn bg" style={{minWidth:130}} disabled={loading}>{loading?"Sending...":"Get Started →"}</button>
+      </div>
+      {err&&<p style={{color:"#ff8080",fontSize:13,marginTop:8,textAlign:"center"}}>{err}</p>}
+    </div>
+  );
+};
+
+// ========== LANDING PAGE ==========
+const AuthPage=()=>{
+  const[email,setEmail]=useState("");
+  const[sent,setSent]=useState(false);
+  const[loading,setLoading]=useState(false);
+  const[err,setErr]=useState("");
+  const go=async()=>{
     if(!email||!email.includes("@")){setErr("Please enter a valid email");return;}
     setLoading(true);setErr("");
     const{error}=await supabase.auth.signInWithOtp({email,options:{emailRedirectTo:window.location.origin}});
     setLoading(false);
     if(error)setErr(error.message);else setSent(true);
   };
-  
-  const signInWithGoogle = async()=>{
-    const{error}=await supabase.auth.signInWithOAuth({
-      provider:'google',
-      options:{redirectTo:window.location.origin}
-    });
+  const signInWithGoogle=async()=>{
+    const{error}=await supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin}});
     if(error)setErr(error.message);
   };
-  
+  const formProps={email,setEmail,sent,setSent,loading,err,go,signInWithGoogle};
+
   return <div>
-    <div style={{background:`linear-gradient(135deg,${B.navy},${B.navyL})`,padding:"60px 20px 50px",textAlign:"center",color:B.wh}}>
-      <div style={{maxWidth:600,margin:"0 auto"}}>
-        <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(212,168,67,0.2)",border:"1px solid rgba(212,168,67,0.4)",padding:"6px 16px",borderRadius:20,fontSize:13,fontWeight:600,color:B.goldL,marginBottom:24}}><Ic name="zap" size={14} color={B.gold}/> Free During Beta</div>
-        <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(32px,5vw,48px)",lineHeight:1.15,marginBottom:16}}>No More Hoping.<br/><span style={{color:B.gold}}>Make Things Happen.</span></h1>
-        <p style={{fontSize:17,lineHeight:1.6,opacity:0.85,maxWidth:480,margin:"0 auto 32px"}}>Motivate anyone to be at the right place, at the right time — with a little buried treasure.</p>
-        {!sent?(
-          <div style={{maxWidth:420,margin:"0 auto"}}>
-            {/* Google SSO Button */}
-            <button onClick={signInWithGoogle} style={{width:"100%",background:"white",color:"#1f1f1f",border:"none",borderRadius:8,padding:"12px 24px",fontSize:15,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:10,marginBottom:10,transition:"all 0.2s"}} onMouseOver={e=>e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,0.15)"} onMouseOut={e=>e.currentTarget.style.boxShadow="none"}>
-              <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
-              Continue with Google
-            </button>
-            <p style={{fontSize:12,opacity:0.7,marginBottom:16}}>Frequent user? →</p>
-            
-            {/* Divider */}
-            <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
-              <div style={{flex:1,height:1,background:"rgba(255,255,255,0.2)"}}/>
-              <span style={{fontSize:13,opacity:0.6}}>or</span>
-              <div style={{flex:1,height:1,background:"rgba(255,255,255,0.2)"}}/>
-            </div>
-            
-            {/* Email Input */}
-            <div style={{display:"flex",gap:10,flexWrap:"wrap",justifyContent:"center"}}>
-              <input type="email" placeholder="Enter your email to start" value={email} onChange={e=>{setEmail(e.target.value);setErr("");}} onKeyDown={e=>e.key==="Enter"&&go()} className="inp" style={{flex:1,minWidth:220,textAlign:"center",borderColor:"rgba(255,255,255,0.2)",background:"rgba(255,255,255,0.1)",color:"white"}}/>
-              <button onClick={go} className="btn bg" style={{minWidth:140}} disabled={loading}>{loading?"Sending...":"Get Started"}</button>
-            </div>
-            {err&&<p style={{color:"#ff6b6b",fontSize:13,marginTop:8}}>{err}</p>}
-            <p style={{fontSize:12,opacity:0.6,marginTop:8}}>Just claiming a Bondzy? No account needed.</p>
-          </div>
-        ):(
-          <div style={{maxWidth:420,margin:"0 auto",background:"rgba(255,255,255,0.1)",borderRadius:12,padding:24,animation:"fadeIn 0.3s ease"}}>
-            <div style={{fontSize:32,marginBottom:12}}>📧</div>
-            <h2 style={{fontSize:20,marginBottom:8}}>Check your email!</h2>
-            <p style={{fontSize:15,opacity:0.85,lineHeight:1.6}}>We sent a magic link to <strong>{email}</strong>. Click it to sign in.</p>
-            <p style={{fontSize:13,opacity:0.6,marginTop:12}}>Don't see it? Check your spam folder.</p>
-            <button onClick={()=>setSent(false)} className="btn bo" style={{marginTop:16,borderColor:"rgba(255,255,255,0.3)"}}>Try a different email</button>
-          </div>
-        )}
+
+    {/* ── HERO ── */}
+    <div style={{background:`linear-gradient(150deg,${B.navy} 0%,#1e3a6e 60%,#162d58 100%)`,padding:"72px 20px 64px",textAlign:"center",color:B.wh}}>
+      <div style={{maxWidth:640,margin:"0 auto"}}>
+        <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(212,168,67,0.18)",border:"1px solid rgba(212,168,67,0.4)",padding:"6px 18px",borderRadius:20,fontSize:13,fontWeight:700,color:B.goldL,marginBottom:32,letterSpacing:0.3}}>
+          <Ic name="zap" size={13} color={B.gold}/> Free During Beta
+        </div>
+        <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(38px,6vw,58px)",lineHeight:1.1,marginBottom:20,letterSpacing:-0.5}}>
+          The Reward for<br/><span style={{color:B.gold}}>Showing Up.</span>
+        </h1>
+        <p style={{fontSize:18,lineHeight:1.7,opacity:0.82,maxWidth:500,margin:"0 auto 44px"}}>
+          Drop a digital treasure at any location. The only way to claim it is to actually be there — GPS verified, time-locked, no exceptions.
+        </p>
+        <AuthForm {...formProps}/>
+        <p style={{fontSize:12,opacity:0.45,marginTop:20,color:B.wh}}>Receiving a Reward Bondzy? No account needed — just click the link in your email.</p>
       </div>
     </div>
-    <div style={{maxWidth:800,margin:"0 auto",padding:"50px 20px"}}>
-      <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,textAlign:"center",marginBottom:10}}>How Reward Bondzies Work</h2>
-      <p style={{textAlign:"center",color:B.gryD,marginBottom:36,fontSize:15}}>Think of it like burying a treasure for someone to find.</p>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:16}}>
-        {[{ic:"gift",s:"1",t:"Pick a Reward",d:"A PayPal link, gift card, promo code, or anything of value."},{ic:"user",s:"2",t:"Name the Person",d:"Who needs to show up? Enter their email."},{ic:"pin",s:"3",t:"Set Place & Time",d:"Where and when they need to be there."},{ic:"nav",s:"4",t:"GPS Verifies",d:"They show up, tap Redeem, get the treasure!"}].map((s,i)=>(
-          <div key={i} className="crd" style={{textAlign:"center",padding:"28px 16px",animation:`fadeIn 0.5s ease ${i*0.1}s both`}}>
-            <div style={{width:44,height:44,borderRadius:12,background:B.navy,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px"}}><Ic name={s.ic} size={22} color={B.gold}/></div>
-            <div style={{fontSize:11,fontWeight:800,color:B.gold,marginBottom:6,letterSpacing:1}}>STEP {s.s}</div>
-            <h3 style={{fontSize:15,fontWeight:700,marginBottom:6}}>{s.t}</h3>
-            <p style={{fontSize:13,color:B.gryD,lineHeight:1.5}}>{s.d}</p>
+
+    {/* ── TWO PATHS ── */}
+    <div style={{background:B.wh,padding:"72px 20px"}}>
+      <div style={{maxWidth:920,margin:"0 auto"}}>
+        <div style={{textAlign:"center",marginBottom:52}}>
+          <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(26px,4vw,38px)",marginBottom:12}}>Two Ways to Use Bondzy</h2>
+          <p style={{color:B.gryD,fontSize:16,maxWidth:460,margin:"0 auto"}}>One mechanic. Infinite applications. Pick the path that fits.</p>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(320px,1fr))",gap:28}}>
+
+          {/* P2P */}
+          <div style={{border:`2px solid ${B.gold}`,borderRadius:18,overflow:"hidden",display:"flex",flexDirection:"column"}}>
+            <div style={{background:`linear-gradient(135deg,${B.navy},${B.navyL})`,padding:"32px 28px 28px",color:B.wh}}>
+              <div style={{fontSize:36,marginBottom:14}}>✨</div>
+              <h3 style={{fontFamily:"'DM Serif Display',serif",fontSize:26,marginBottom:10}}>For People</h3>
+              <p style={{fontSize:14,lineHeight:1.7,opacity:0.85}}>Make your word mean something. Or give someone a reason they can't ignore to actually show up.</p>
+            </div>
+            <div style={{padding:"28px 28px 32px",flex:1}}>
+              <div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:18}}>
+                <div style={{width:38,height:38,borderRadius:9,background:`${B.gold}18`,border:`1px solid ${B.gold}50`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <Ic name="gift" size={17} color={B.goldD}/>
+                </div>
+                <div>
+                  <div style={{fontWeight:800,fontSize:14,marginBottom:3,color:B.navy}}>Reward Bondzy</div>
+                  <div style={{fontSize:13,color:B.gryD,lineHeight:1.6}}>Bury a treasure at a location. They only get it by being there at the right time.</div>
+                </div>
+              </div>
+              <div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:24}}>
+                <div style={{width:38,height:38,borderRadius:9,background:`${B.gold}18`,border:`1px solid ${B.gold}50`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <Ic name="zap" size={17} color={B.goldD}/>
+                </div>
+                <div>
+                  <div style={{fontWeight:800,fontSize:14,marginBottom:3,color:B.navy}}>Promise Bondzy</div>
+                  <div style={{fontSize:13,color:B.gryD,lineHeight:1.6}}>Stake something on your own attendance. Don't show, and they get the penalty automatically.</div>
+                </div>
+              </div>
+              <div style={{borderTop:`1px solid ${B.bdr}`,paddingTop:20}}>
+                <div style={{fontSize:11,fontWeight:800,color:B.gry,letterSpacing:0.8,marginBottom:12,textTransform:"uppercase"}}>Works for</div>
+                {["💪 Getting someone to the gym","🎹 Kids who skip piano practice","🎭 Your friend's show — you said you'd go","🔧 The contractor who always cancels","👨‍👧 Making it to the school play"].map((u,i)=>(
+                  <div key={i} style={{fontSize:13,color:B.navy,fontWeight:500,padding:"7px 0",borderBottom:i<4?`1px solid ${B.bdr}`:"none",display:"flex",alignItems:"center",gap:8}}>{u}</div>
+                ))}
+              </div>
+            </div>
           </div>
-        ))}
+
+          {/* B2C */}
+          <div style={{border:`2px solid ${B.grn}`,borderRadius:18,overflow:"hidden",display:"flex",flexDirection:"column"}}>
+            <div style={{background:`linear-gradient(135deg,#1e7040,${B.grn})`,padding:"32px 28px 28px",color:B.wh}}>
+              <div style={{fontSize:36,marginBottom:14}}>🏪</div>
+              <h3 style={{fontFamily:"'DM Serif Display',serif",fontSize:26,marginBottom:10}}>For Businesses</h3>
+              <p style={{fontSize:14,lineHeight:1.7,opacity:0.9}}>Send customers a reward they can only claim by walking through your door. GPS-verified. Zero friction.</p>
+            </div>
+            <div style={{padding:"28px 28px 32px",flex:1}}>
+              {[
+                {ic:"nav",t:"GPS-verified redemption",d:"Customers must physically be at your location to claim. No faking it from the couch."},
+                {ic:"mail",t:"No app. No account needed.",d:"Customers click a link in their email. Works on any phone, any browser, instantly."},
+                {ic:"zap",t:"Plugs into your booking system",d:"Connect via Acuity, Square, or our API. Bondzies fire automatically with every new booking."},
+              ].map((f,i)=>(
+                <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:i<2?18:0}}>
+                  <div style={{width:38,height:38,borderRadius:9,background:`${B.grn}12`,border:`1px solid ${B.grn}40`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <Ic name={f.ic} size={17} color={B.grn}/>
+                  </div>
+                  <div>
+                    <div style={{fontWeight:800,fontSize:14,marginBottom:3,color:B.navy}}>{f.t}</div>
+                    <div style={{fontSize:13,color:B.gryD,lineHeight:1.6}}>{f.d}</div>
+                  </div>
+                </div>
+              ))}
+              <div style={{borderTop:`1px solid ${B.bdr}`,paddingTop:20,marginTop:24}}>
+                <div style={{fontSize:11,fontWeight:800,color:B.gry,letterSpacing:0.8,marginBottom:12,textTransform:"uppercase"}}>Works for</div>
+                {["🏺 Pottery studios & art classes","🍽️ Restaurants & cafés","💇 Salons & wellness studios","🛍️ Retail & boutiques","🎟️ Event venues & experiences"].map((u,i)=>(
+                  <div key={i} style={{fontSize:13,color:B.navy,fontWeight:500,padding:"7px 0",borderBottom:i<4?`1px solid ${B.bdr}`:"none"}}>{u}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
-    {/* HOW PROMISE BONDZIES WORK SECTION */}
-    <div style={{background:B.off,padding:"50px 20px",borderTop:`1px solid ${B.bdr}`}}>
-      <div style={{maxWidth:800,margin:"0 auto"}}>
-        <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,textAlign:"center",marginBottom:10}}>How Promise Bondzies Work</h2>
-        <p style={{textAlign:"center",color:B.gryD,marginBottom:36,fontSize:15}}>You said you'd be there. Now back it up.</p>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:16}}>
-          {[{ic:"shield",s:"1",t:"Set a Penalty",d:"A PayPal link, gift card, promo code — whatever you put on the line if you don't show up."},{ic:"user",s:"2",t:"Name Who You Promised",d:"The person you made the commitment to. Enter their email."},{ic:"pin",s:"3",t:"Set the Place & Time",d:"Where you said you'd be and when."},{ic:"nav",s:"4",t:"GPS Verifies You",d:"Show up and tap Verify. Don't show up, and they get the penalty."}].map((s,i)=>(
-            <div key={i} className="crd" style={{textAlign:"center",padding:"28px 16px",animation:`fadeIn 0.5s ease ${i*0.1}s both`}}>
-              <div style={{width:44,height:44,borderRadius:12,background:B.navy,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px"}}><Ic name={s.ic} size={22} color={B.gold}/></div>
-              <div style={{fontSize:11,fontWeight:800,color:B.gold,marginBottom:6,letterSpacing:1}}>STEP {s.s}</div>
-              <h3 style={{fontSize:15,fontWeight:700,marginBottom:6}}>{s.t}</h3>
-              <p style={{fontSize:13,color:B.gryD,lineHeight:1.5}}>{s.d}</p>
+
+    {/* ── HOW IT WORKS ── */}
+    <div style={{background:B.off,padding:"72px 20px",borderTop:`1px solid ${B.bdr}`}}>
+      <div style={{maxWidth:820,margin:"0 auto"}}>
+        <div style={{textAlign:"center",marginBottom:52}}>
+          <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(26px,4vw,36px)",marginBottom:12}}>How It Works</h2>
+          <p style={{color:B.gryD,fontSize:15}}>Three steps. Two minutes to set up. Works the same for people and businesses.</p>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:20}}>
+          {[
+            {n:"1",ic:"gift",t:"Create a Bondzy",d:"Pick a location, date, time, and reward. Choose Reward (motivate someone) or Promise (back your own word)."},
+            {n:"2",ic:"send",t:"Share the Link",d:"Recipient gets an email with a direct link. For Reward Bondzies, they don't even need an account."},
+            {n:"3",ic:"nav",t:"Show Up & Claim",d:"The time window opens. GPS confirms they're there. One tap — treasure unlocked."},
+          ].map((s,i)=>(
+            <div key={i} style={{background:B.wh,borderRadius:16,padding:"36px 22px",textAlign:"center",border:`1px solid ${B.bdr}`,boxShadow:"0 2px 12px rgba(27,42,74,0.05)",animation:`fadeIn 0.5s ease ${i*0.1}s both`}}>
+              <div style={{width:56,height:56,borderRadius:"50%",background:B.navy,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 18px",boxShadow:`0 6px 20px rgba(27,42,74,0.22)`}}>
+                <Ic name={s.ic} size={24} color={B.gold}/>
+              </div>
+              <div style={{fontSize:11,fontWeight:800,color:B.gold,letterSpacing:1,marginBottom:10,textTransform:"uppercase"}}>Step {s.n}</div>
+              <h3 style={{fontSize:16,fontWeight:800,marginBottom:10,color:B.navy}}>{s.t}</h3>
+              <p style={{fontSize:14,color:B.gryD,lineHeight:1.65}}>{s.d}</p>
             </div>
           ))}
         </div>
       </div>
     </div>
 
-    {/* USE CASES SECTION */}
-    <div style={{background:B.wh,padding:"50px 20px",borderTop:`1px solid ${B.bdr}`}}>
-      <div style={{maxWidth:760,margin:"0 auto",textAlign:"center"}}>
-        <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:26,marginBottom:8}}>How Will You Use Bondzy?</h2>
-        <p style={{color:B.gryD,marginBottom:4,fontSize:15}}>Some call them bribes. We call them Bondzies.</p>
-        <p style={{color:B.gryD,marginBottom:36,fontSize:13}}>Motivating someone else to show up? → <strong>Reward Bondzy.</strong> Made a promise to be somewhere for someone? → <strong>Promise Bondzy.</strong></p>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:24,textAlign:"left"}}>
-          <div>
-            <div style={{fontSize:13,fontWeight:800,color:B.gold,letterSpacing:1,marginBottom:12}}>🎁 REWARD BONDZIES — for motivating others</div>
-            {["💪 Get someone to the gym","👩‍⚕️ Doctor's appointments","🎹 Piano lessons for kids","🤝 AA or support meetings"].map((u,i)=>(
-              <div key={i} style={{background:B.off,padding:"12px 16px",borderRadius:10,fontSize:14,fontWeight:600,border:`1px solid ${B.bdr}`,marginBottom:8}}>{u}</div>
-            ))}
-          </div>
-          <div>
-            <div style={{fontSize:13,fontWeight:800,color:B.gold,letterSpacing:1,marginBottom:12}}>🤝 PROMISE BONDZIES — when your word is on the line</div>
-            {["🎭 Show up to a friend's performance","🔧 The contractor who actually arrives","👨‍👧 Make it to the school play","🤝 The meeting you won't cancel"].map((u,i)=>(
-              <div key={i} style={{background:B.off,padding:"12px 16px",borderRadius:10,fontSize:14,fontWeight:600,border:`1px solid ${B.bdr}`,marginBottom:8}}>{u}</div>
-            ))}
-          </div>
-        </div>
+    {/* ── BOTTOM CTA ── */}
+    <div style={{background:`linear-gradient(150deg,#162d58 0%,${B.navyL} 50%,${B.navy} 100%)`,padding:"72px 20px",textAlign:"center",color:B.wh}}>
+      <div style={{maxWidth:520,margin:"0 auto"}}>
+        <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(26px,4.5vw,40px)",marginBottom:14,lineHeight:1.15}}>Ready to Create One?</h2>
+        <p style={{fontSize:16,opacity:0.75,marginBottom:44,lineHeight:1.7}}>Free during beta. No credit card. Set up your first Bondzy in under two minutes.</p>
+        <AuthForm {...formProps}/>
       </div>
     </div>
-    <div style={{textAlign:"center",padding:"30px 20px",borderTop:`1px solid ${B.bdr}`,color:B.gry,fontSize:13}}>
-      <span style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:B.navy,display:"block",marginBottom:6}}>Bondzy</span>© 2026 · <a href="https://www.bondzy.com" target="_blank" rel="noopener noreferrer" style={{color:B.gry,textDecoration:"none"}} onMouseOver={e=>e.currentTarget.style.color=B.navy} onMouseOut={e=>e.currentTarget.style.color=B.gry}>www.bondzy.com</a> · info@bondzy.com
+
+    {/* ── FOOTER ── */}
+    <div style={{textAlign:"center",padding:"28px 20px",borderTop:`1px solid ${B.bdr}`,color:B.gry,fontSize:13}}>
+      <span style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:B.navy,display:"block",marginBottom:6}}>Bondzy</span>
+      © 2026 ·{" "}<a href="https://www.bondzy.com" target="_blank" rel="noopener noreferrer" style={{color:B.gry,textDecoration:"none"}} onMouseOver={e=>e.currentTarget.style.color=B.navy} onMouseOut={e=>e.currentTarget.style.color=B.gry}>www.bondzy.com</a>{" "}· info@bondzy.com
     </div>
+
   </div>;
 };
 
@@ -246,7 +317,7 @@ const Help = () => {
   const faqs=[
     {q:"What are Bondzies?",a:"A Reward Bondzy lets you bury a treasure — a link to a reward — that someone can only claim by being at a specific place at a specific time."},
     {q:"How do Reward Bondzies work?",a:"You specify WHO, WHERE, WHEN, and WHAT (a reward link). We email the recipient. If they show up and verify GPS, they get the reward!"},
-    {q:"Does the recipient need an account?",a:"Yes, to claim they need to sign up (just an email, no password). They get an email with a direct link."},
+    {q:"Does the recipient need an account?",a:"For Reward Bondzies — no. Recipients click the link in their email and go straight to the Bondzy. No sign-up, no password. For Promise Bondzies, recipients need an account to monitor the creator's check-in status."},
     {q:"What can I use as a reward?",a:"Anything of value! PayPal or Venmo links, digital gift card URLs, promo codes, passwords to a download — get creative. If it's a link, the recipient gets a clickable button. If it's a code or text, they get a copy button."},
     {q:"What happens if they don't show up?",a:"The reward goes unclaimed and the Bondzy is marked as forfeit."},
     {q:"How does GPS verification work?",a:"When the time window opens, the app automatically checks your GPS. You need to be within about 100 meters (~330 feet) of the target location. For Reward Bondzies, the recipient verifies. For Promise Bondzies, the creator verifies."},
