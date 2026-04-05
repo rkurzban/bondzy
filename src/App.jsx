@@ -87,7 +87,7 @@ const Ic = ({name,size=20,color="currentColor"}) => {
 // Styles
 const fl=document.createElement("link");fl.href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap";fl.rel="stylesheet";document.head.appendChild(fl);
 const gs=document.createElement("style");
-gs.textContent=`*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Plus Jakarta Sans',sans-serif;background:${B.off};color:${B.navy}}input,select,textarea,button{font-family:inherit}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}@keyframes glow{0%,100%{box-shadow:0 0 15px rgba(46,139,87,0.3)}50%{box-shadow:0 0 30px rgba(46,139,87,0.5)}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes confetti{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(-180px) rotate(720deg);opacity:0}}.inp{width:100%;padding:12px 14px;border:2px solid ${B.bdr};border-radius:8px;font-size:15px;background:${B.wh};color:${B.navy};transition:border-color 0.2s;outline:none}.inp:focus{border-color:${B.navy}}.inp::placeholder{color:${B.gry}}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;transition:all 0.2s;border:none}.bn{background:${B.navy};color:white}.bn:hover{background:${B.navyL}}.bg{background:${B.gold};color:white}.bg:hover{background:${B.goldD}}.bgr{background:${B.grn};color:white}.bgr:hover{background:#27ae60}.bo{background:white;color:${B.navy};border:2px solid ${B.bdr}}.bo:hover{border-color:${B.navy}}.crd{background:${B.wh};border-radius:12px;border:1px solid ${B.bdr};padding:20px;transition:all 0.2s}.crd:hover{box-shadow:0 4px 20px rgba(27,42,74,0.06)}.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:${B.navy};color:white;padding:14px 24px;border-radius:10px;font-weight:600;font-size:14px;z-index:1000;animation:slideUp 0.3s ease;box-shadow:0 8px 30px rgba(0,0,0,0.2)}`;
+gs.textContent=`*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Plus Jakarta Sans',sans-serif;background:${B.off};color:${B.navy}}input,select,textarea,button{font-family:inherit}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}@keyframes glow{0%,100%{box-shadow:0 0 15px rgba(46,139,87,0.3)}50%{box-shadow:0 0 30px rgba(46,139,87,0.5)}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes confetti{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(-180px) rotate(720deg);opacity:0}}@keyframes gradShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}@keyframes livePulse{0%,100%{opacity:1}50%{opacity:0.4}}.inp{width:100%;padding:12px 14px;border:2px solid ${B.bdr};border-radius:8px;font-size:15px;background:${B.wh};color:${B.navy};transition:border-color 0.2s;outline:none}.inp:focus{border-color:${B.navy}}.inp::placeholder{color:${B.gry}}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;transition:all 0.2s;border:none}.bn{background:${B.navy};color:white}.bn:hover{background:${B.navyL}}.bg{background:${B.gold};color:white}.bg:hover{background:${B.goldD}}.bgr{background:${B.grn};color:white}.bgr:hover{background:#27ae60}.bo{background:white;color:${B.navy};border:2px solid ${B.bdr}}.bo:hover{border-color:${B.navy}}.crd{background:${B.wh};border-radius:12px;border:1px solid ${B.bdr};padding:20px;transition:all 0.2s}.crd:hover{box-shadow:0 4px 20px rgba(27,42,74,0.06)}.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:${B.navy};color:white;padding:14px 24px;border-radius:10px;font-weight:600;font-size:14px;z-index:1000;animation:slideUp 0.3s ease;box-shadow:0 8px 30px rgba(0,0,0,0.2)}`;
 document.head.appendChild(gs);
 
 const fmtD=d=>new Date(d+"T00:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"});
@@ -819,16 +819,33 @@ const Detail = ({bz,onNav,onRedeem,role,isPublic=false}) => {
           </div>
         ))}
 
-        {/* REWARD: RECIPIENT - REDEEMED → show reward value */}
-        {!isProm&&isR&&bz.status==="redeemed"&&<div style={{background:B.grnL,borderRadius:10,padding:16,marginTop:4,textAlign:"center"}}>
-          <div style={{fontSize:13,fontWeight:700,color:B.grn,marginBottom:6}}>🎉 YOUR REWARD</div>
-          {isURL(bz.reward_link)
-            ?<a href={bz.reward_link} target="_blank" rel="noopener noreferrer" style={{color:B.grn,fontWeight:600,wordBreak:"break-all",fontSize:14}}>{bz.reward_link}</a>
-            :<div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,flexWrap:"wrap"}}>
-              <span style={{fontWeight:700,fontSize:16,color:B.grn,wordBreak:"break-all"}}>{bz.reward_link}</span>
-              <button className="btn bo" style={{fontSize:12,padding:"4px 10px",flexShrink:0}} onClick={()=>{navigator.clipboard?.writeText(bz.reward_link);setCopR(true);setTimeout(()=>setCopR(false),2000);}}><Ic name="copy" size={13}/>{copR?" Copied!":" Copy"}</button>
-            </div>}
-        </div>}
+        {/* REWARD: RECIPIENT - REDEEMED → animated live verification screen */}
+        {!isProm&&isR&&bz.status==="redeemed"&&(()=>{
+          const elapsedSec=bz.redeemed_at?Math.floor((now.getTime()-new Date(bz.redeemed_at).getTime())/1000):0;
+          const elapsedStr=elapsedSec<60?`${elapsedSec}s`:`${Math.floor(elapsedSec/60)}m ${elapsedSec%60}s`;
+          return <div style={{borderRadius:12,overflow:"hidden",marginTop:4,boxShadow:"0 4px 20px rgba(0,0,0,0.15)"}}>
+            {/* Animated gradient header — always moving, impossible to screenshot convincingly */}
+            <div style={{background:"linear-gradient(270deg,#2E8B57,#D4A843,#1B2A4A,#2E8B57)",backgroundSize:"300% 300%",animation:"gradShift 4s ease infinite",padding:"14px 16px",textAlign:"center"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:4}}>
+                <span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#7fff7f",animation:"livePulse 1.2s ease-in-out infinite"}}/>
+                <span style={{fontSize:11,fontWeight:800,letterSpacing:1.5,color:"white",textTransform:"uppercase"}}>Live · Verified</span>
+              </div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,0.8)"}}>Redeemed {elapsedStr} ago</div>
+            </div>
+            {/* Reward code body */}
+            <div style={{background:B.grnL,padding:"16px",textAlign:"center"}}>
+              <div style={{fontSize:11,fontWeight:800,color:B.grn,letterSpacing:1,marginBottom:10,textTransform:"uppercase"}}>Your Reward</div>
+              {isURL(bz.reward_link)
+                ?<a href={bz.reward_link} target="_blank" rel="noopener noreferrer" className="btn bgr" style={{width:"100%",marginBottom:10,wordBreak:"break-all",fontSize:14}}>{bz.reward_link}</a>
+                :<div style={{background:B.wh,border:`2px solid ${B.grn}`,borderRadius:8,padding:"14px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
+                  <span style={{fontFamily:"monospace",fontWeight:800,fontSize:22,color:B.grn,letterSpacing:2,wordBreak:"break-all"}}>{bz.reward_link}</span>
+                  <button className="btn bo" style={{fontSize:12,padding:"4px 10px",flexShrink:0}} onClick={()=>{navigator.clipboard?.writeText(bz.reward_link);setCopR(true);setTimeout(()=>setCopR(false),2000);}}><Ic name="copy" size={13}/>{copR?" Copied!":" Copy"}</button>
+                </div>}
+              {bz.redeemed_at&&<div style={{fontSize:11,color:B.gryD,marginBottom:4}}>📍 {bz.location_name} · {new Date(bz.redeemed_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</div>}
+              <div style={{fontSize:10,color:B.gry,marginTop:6}}>The gradient above animates continuously — a screenshot is static.</div>
+            </div>
+          </div>;
+        })()}
 
         {/* PROMISE: RECIPIENT - FORFEIT → show penalty value (creator didn't show) */}
         {isProm&&isR&&bz.status==="forfeit"&&<div style={{background:B.redL,borderRadius:10,padding:16,marginTop:4,textAlign:"center"}}>
