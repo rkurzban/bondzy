@@ -93,7 +93,7 @@ document.head.appendChild(gs);
 const fmtD=d=>new Date(d+"T00:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"});
 const fmtT=t=>{const[h,m]=t.split(":");const hr=parseInt(h);return`${hr%12||12}:${m} ${hr>=12?"PM":"AM"}`;};
 const stC=s=>({active:{bg:B.bluL,tx:B.blu},redeemed:{bg:B.grnL,tx:B.grn},forfeit:{bg:B.redL,tx:B.red}}[s]||{bg:B.gryL,tx:B.gryD});
-const creatorN=bz=>bz.creator?.name||(bz.creator_email||"").split("@")[0]||"Someone";
+const creatorN=bz=>bz.creator_name||bz.creator?.name||(bz.creator_email||"").split("@")[0]||"Someone";
 const getDist=(a,b,c,d)=>{const R=6371000,dL=((c-a)*Math.PI)/180,dN=((d-b)*Math.PI)/180;const x=Math.sin(dL/2)**2+Math.cos((a*Math.PI)/180)*Math.cos((c*Math.PI)/180)*Math.sin(dN/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));};
 const isExpiredClient=(b)=>{if(b.status!=="active"||!b.date||!b.time)return false;const end=new Date(`${b.date}T${b.time}`).getTime()+(b.grace_minutes||10)*60000;return Date.now()>end;};
 const isURL=s=>/^https?:\/\//i.test(s||"");
@@ -361,7 +361,7 @@ const Dash = ({bondzies,email,userId,onNav,onView,filter,setFilter,tab,setTab,lo
 
 // ========== CREATE BONDZY ==========
 const DRAFT_KEY="bondzy_create_draft";
-const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
+const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => {
   const isProm=createType==="promise";
   const savedDraft=(()=>{try{const s=localStorage.getItem(DRAFT_KEY);if(s){const p=JSON.parse(s);if(p.createType===createType)return p;}}catch{}return null;})();
   const [step,setStep]=useState(savedDraft?.step||1);
@@ -386,7 +386,7 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
     setSaving(true);
     const{data,error}=await supabase.from("bondzies").insert({
       type:createType,status:"active",creator_id:userId,
-      creator_email:session.user.email,
+      creator_email:session.user.email,creator_name:profile?.name||"",
       recipient_email:f.recipientEmail,recipient_name:f.recipientName,
       location_name:f.locationName,location_address:f.locationAddress||"",
       location_lat:f.locationLat,location_lng:f.locationLng,
@@ -408,8 +408,8 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
             body:JSON.stringify({
               sender:{name:'Bondzy',email:'info@bondzy.com'},
               to:[{email:f.recipientEmail,name:f.recipientName}],
-              subject:isProm?`🤝 ${session.user.email.split("@")[0]} made you a Promise Bondzy!`:'🎁 Someone has a Reward Bondzy for you!',
-              textContent:isProm?`Hi ${f.recipientName}!\n\nSomeone made a Promise Bondzy to you — they're committing to be somewhere at a specific time. If they don't show up, you get the penalty!\n\nWho: ${session.user.email}\nWhere: ${f.locationName}\nWhen: ${formattedDate} at ${formattedTime}\nPenalty if no-show: ${f.rewardDescription.trim()||'Bondzy Penalty'}\n\nIf they don't verify their GPS at the location in time, you'll automatically receive the penalty link.\n\nOpen Bondzy: https://app.bondzy.com\n\n---\nBondzy — No More Hoping. Make Things Happen.\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`:`Hi ${f.recipientName}!\n\nSomeone buried a treasure for you using Bondzy! Show up at the right place and time to claim your reward.\n\nGo to: ${f.locationName}\nWhen: ${formattedDate} at ${formattedTime}\nGrace period: 10 minutes\nReward: ${f.rewardDescription.trim()||'Bondzy Reward'}\n\nOpen Bondzy at the right place and time, verify your GPS, and the treasure is yours!\n\nOpen Bondzy: https://app.bondzy.com\n\n---\nBondzy — No More Hoping. Make Things Happen.\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`,
+              subject:isProm?`🤝 ${profile?.name||session.user.email.split("@")[0]} made you a Promise Bondzy!`:`🎁 ${profile?.name||session.user.email.split("@")[0]} has a Reward Bondzy for you!`,
+              textContent:isProm?`Hi ${f.recipientName}!\n\n${profile?.name||session.user.email.split("@")[0]} made a Promise Bondzy to you — they're committing to be somewhere at a specific time. If they don't show up, you get the penalty!\n\nWho: ${profile?.name||session.user.email}\nWhere: ${f.locationName}\nWhen: ${formattedDate} at ${formattedTime}\nPenalty if no-show: ${f.rewardDescription.trim()||'Bondzy Penalty'}\n\nIf they don't verify their GPS at the location in time, you'll automatically receive the penalty link.\n\nOpen Bondzy: https://app.bondzy.com?bondzy=${data.id}\n\n---\nBondzy — No More Hoping. Make Things Happen.\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`:`Hi ${f.recipientName}!\n\n${profile?.name||session.user.email.split("@")[0]} buried a treasure for you using Bondzy! Show up at the right place and time to claim your reward.\n\nGo to: ${f.locationName}\nWhen: ${formattedDate} at ${formattedTime}\nGrace period: 10 minutes\nReward: ${f.rewardDescription.trim()||'Bondzy Reward'}\n\nOpen Bondzy at the right place and time, verify your GPS, and the treasure is yours!\n\nOpen Bondzy: https://app.bondzy.com?bondzy=${data.id}\n\n---\nBondzy — No More Hoping. Make Things Happen.\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`,
               htmlContent:isProm?`
                 <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                   <div style="background:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
@@ -417,16 +417,16 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
                   </div>
                   <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
                     <h2 style="color:#1B2A4A;margin:0 0 8px;">Hi ${f.recipientName}! 👋</h2>
-                    <p style="color:#5A6570;font-size:15px;line-height:1.6;">Someone made a <strong>Promise Bondzy</strong> to you — they're committing to be somewhere at a specific time. If they don't show up, you get the penalty!</p>
+                    <p style="color:#5A6570;font-size:15px;line-height:1.6;"><strong>${profile?.name||session.user.email.split("@")[0]}</strong> made a <strong>Promise Bondzy</strong> to you — they're committing to be somewhere at a specific time. If they don't show up, you get the penalty!</p>
                     <div style="background:#FFF8E7;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #D4A843;">
-                      <p style="margin:4px 0;font-size:14px;">👤 <strong>Who:</strong> ${session.user.email}</p>
+                      <p style="margin:4px 0;font-size:14px;">👤 <strong>Who:</strong> ${profile?.name||session.user.email}</p>
                       <p style="margin:4px 0;font-size:14px;">📍 <strong>Where:</strong> ${f.locationName}</p>
                       <p style="margin:4px 0;font-size:14px;">📅 <strong>When:</strong> ${formattedDate} at ${formattedTime}</p>
                       <p style="margin:4px 0;font-size:14px;">⚠️ <strong>Penalty if no-show:</strong> ${f.rewardDescription.trim()||'Bondzy Penalty'}</p>
                     </div>
                     <p style="color:#5A6570;font-size:14px;line-height:1.6;">If they don't verify their GPS at the location in time, you'll automatically receive the penalty link.</p>
                     <div style="text-align:center;margin:20px 0;">
-                      <a href="https://app.bondzy.com" style="background:#D4A843;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">Open Bondzy</a>
+                      <a href="https://app.bondzy.com?bondzy=${data.id}" style="background:#D4A843;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">Open Bondzy</a>
                     </div>
                   </div>
                   <div style="background:#F5F6F8;padding:20px 16px;text-align:center;color:#5A6570;font-size:12px;border-radius:0 0 12px 12px;">
@@ -441,7 +441,7 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
                   </div>
                   <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
                     <h2 style="color:#1B2A4A;margin:0 0 8px;">Hi ${f.recipientName}! 👋</h2>
-                    <p style="color:#5A6570;font-size:15px;line-height:1.6;">Someone buried a treasure for you using Bondzy! Show up at the right place and time to claim your reward.</p>
+                    <p style="color:#5A6570;font-size:15px;line-height:1.6;"><strong>${profile?.name||session.user.email.split("@")[0]}</strong> buried a treasure for you using Bondzy! Show up at the right place and time to claim your reward.</p>
                     <div style="background:#FFF8E7;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #D4A843;">
                       <p style="margin:4px 0;font-size:14px;">📍 <strong>Go to:</strong> ${f.locationName}</p>
                       <p style="margin:4px 0;font-size:14px;">📅 <strong>When:</strong> ${formattedDate} at ${formattedTime}</p>
@@ -450,7 +450,7 @@ const Create = ({onNav,userId,onCreate,session,createType="reward"}) => {
                     </div>
                     <p style="color:#5A6570;font-size:14px;line-height:1.6;">Open Bondzy at the right place and time, verify your GPS, and the treasure is yours!</p>
                     <div style="text-align:center;margin:20px 0;">
-                      <a href="https://app.bondzy.com" style="background:#D4A843;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">Open Bondzy</a>
+                      <a href="https://app.bondzy.com?bondzy=${data.id}" style="background:#D4A843;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">Open Bondzy</a>
                     </div>
                   </div>
                   <div style="background:#F5F6F8;padding:20px 16px;text-align:center;color:#5A6570;font-size:12px;border-radius:0 0 12px 12px;">
@@ -1111,7 +1111,7 @@ export default function BondzyApp() {
     <Header page={pg} onNav={nav} email={email}/>
     {pg==="landing"&&<AuthPage/>}
     {pg==="dashboard"&&<Dash bondzies={bondzies} email={email} userId={userId} onNav={nav} filter={df} setFilter={setDf} tab={dt} setTab={setDt} loading={bzLoad} onView={(b,r)=>{setSel(b);setRole(r);setPg("detail");}}/>}
-    {pg==="create"&&<Create onNav={nav} userId={userId} onCreate={handleCreate} session={session} createType={createType}/>}
+    {pg==="create"&&<Create onNav={nav} userId={userId} onCreate={handleCreate} session={session} profile={profile} createType={createType}/>}
     {pg==="detail"&&sel&&<Detail bz={sel} onNav={nav} onRedeem={handleRedeem} role={role}/>}
     {pg==="public-detail"&&sel&&<Detail bz={sel} onNav={nav} onRedeem={handleRedeem} role={role} isPublic={true}/>}
     {pg==="help"&&<Help/>}
