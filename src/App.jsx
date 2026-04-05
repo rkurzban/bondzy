@@ -93,6 +93,7 @@ document.head.appendChild(gs);
 const fmtD=d=>new Date(d+"T00:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"});
 const fmtT=t=>{const[h,m]=t.split(":");const hr=parseInt(h);return`${hr%12||12}:${m} ${hr>=12?"PM":"AM"}`;};
 const stC=s=>({active:{bg:B.bluL,tx:B.blu},redeemed:{bg:B.grnL,tx:B.grn},forfeit:{bg:B.redL,tx:B.red}}[s]||{bg:B.gryL,tx:B.gryD});
+const creatorN=bz=>bz.creator?.name||(bz.creator_email||"").split("@")[0]||"Someone";
 const getDist=(a,b,c,d)=>{const R=6371000,dL=((c-a)*Math.PI)/180,dN=((d-b)*Math.PI)/180;const x=Math.sin(dL/2)**2+Math.cos((a*Math.PI)/180)*Math.cos((c*Math.PI)/180)*Math.sin(dN/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));};
 const isExpiredClient=(b)=>{if(b.status!=="active"||!b.date||!b.time)return false;const end=new Date(`${b.date}T${b.time}`).getTime()+(b.grace_minutes||10)*60000;return Date.now()>end;};
 const isURL=s=>/^https?:\/\//i.test(s||"");
@@ -338,7 +339,7 @@ const Dash = ({bondzies,email,userId,onNav,onView,filter,setFilter,tab,setTab,lo
           <div key={b.id} className="crd" onClick={()=>onView(b,isR?"recipient":"creator")} style={{cursor:"pointer",animation:`fadeIn 0.3s ease ${i*0.04}s both`,borderLeft:isR&&isActive?`4px solid ${B.gold}`:undefined}}>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,flexWrap:"wrap"}}>
               <span style={{fontSize:16}}>{isR?(isProm?"🤝":"🎁"):(isProm?"🤝":"📤")}</span>
-              <span style={{fontWeight:700,fontSize:15}}>{isR?`From ${(b.creator_email||"someone").split("@")[0]}`:`For ${b.recipient_name}`}</span>
+              <span style={{fontWeight:700,fontSize:15}}>{isR?`From ${creatorN(b)}`:`For ${b.recipient_name}`}</span>
               <span style={{background:isProm?`${B.gold}20`:sc.bg,color:isProm?B.goldD:sc.tx,padding:"2px 10px",borderRadius:6,fontSize:11,fontWeight:800,textTransform:"uppercase"}}>{isProm?"promise":"reward"}</span>
               <span style={{background:sc.bg,color:sc.tx,padding:"2px 10px",borderRadius:6,fontSize:11,fontWeight:800,textTransform:"uppercase"}}>{ds==="expired"?"expired":ds}</span>
               {isR&&isActive&&!isProm&&<span style={{background:B.gold,color:"white",padding:"2px 8px",borderRadius:5,fontSize:10,fontWeight:800}}>CLAIM</span>}
@@ -350,7 +351,7 @@ const Dash = ({bondzies,email,userId,onNav,onView,filter,setFilter,tab,setTab,lo
             </div>
             {isR&&isActive&&!isProm&&<div style={{marginTop:6,fontSize:12,color:B.goldD,fontWeight:600}}>Tap to verify & claim →</div>}
             {!isR&&isActive&&isProm&&<div style={{marginTop:6,fontSize:12,color:B.grn,fontWeight:600}}>Tap to check in & keep your promise →</div>}
-            {isR&&isActive&&isProm&&<div style={{marginTop:6,fontSize:12,color:B.gryD,fontWeight:600}}>Waiting for {(b.creator_email||"creator").split("@")[0]} to check in</div>}
+            {isR&&isActive&&isProm&&<div style={{marginTop:6,fontSize:12,color:B.gryD,fontWeight:600}}>Waiting for {creatorN(b)} to check in</div>}
           </div>
         );})}
       </div>
@@ -717,9 +718,9 @@ const Detail = ({bz,onNav,onRedeem,role,isPublic=false}) => {
         <div style={{fontSize:22,fontFamily:"'DM Serif Display',serif"}}>
           {isProm
             ?(bz.status==="redeemed"
-              ?(!isR?"✅ Promise Kept!":`✅ ${(bz.creator_email||"Creator").split("@")[0]} Kept Their Promise!`)
+              ?(!isR?"✅ Promise Kept!":`✅ ${creatorN(bz)} Kept Their Promise!`)
               :bz.status==="forfeit"
-              ?(isR?`⚠️ ${(bz.creator_email||"Creator").split("@")[0]} Didn't Show`:"⚠️ Promise Broken")
+              ?(isR?`⚠️ ${creatorN(bz)} Didn't Show`:"⚠️ Promise Broken")
               :(!isR?"🤝 Your Commitment":"🤝 A Promise Made to You"))
             :(bz.status==="redeemed"?(isR?"🏆 You Claimed It!":`✅ ${bz.recipient_name} Claimed It!`):bz.status==="forfeit"?"Treasure Unclaimed":isR?"🎁 A Treasure Awaits!":"Waiting for "+bz.recipient_name)}
         </div>
@@ -731,7 +732,7 @@ const Detail = ({bz,onNav,onRedeem,role,isPublic=false}) => {
         </div>
         
         {[
-          {ic:"user",l:isProm?(!isR?"Promised To":"Promised By"):isR?"From":"Recipient",v:isProm?(!isR?`${bz.recipient_name} (${bz.recipient_email})`:(bz.creator_email||"Someone")):isR?(bz.creator_email||"Someone"):`${bz.recipient_name} (${bz.recipient_email})`},
+          {ic:"user",l:isProm?(!isR?"Promised To":"Promised By"):isR?"From":"Recipient",v:isProm?(!isR?`${bz.recipient_name} (${bz.recipient_email})`:creatorN(bz)):isR?creatorN(bz):`${bz.recipient_name} (${bz.recipient_email})`},
           {ic:"pin",l:"Location",v:`${bz.location_name}${bz.location_address?"\n"+bz.location_address:""}`},
           {ic:"clock",l:"Date & Time",v:`${fmtD(bz.date)} at ${fmtT(bz.time)}`},
           {ic:isProm?"zap":"gift",l:isProm?"Penalty if No-Show":"Reward",v:bz.reward_description},
@@ -761,7 +762,7 @@ const Detail = ({bz,onNav,onRedeem,role,isPublic=false}) => {
         {/* PROMISE: RECIPIENT - FORFEIT → show penalty value (creator didn't show) */}
         {isProm&&isR&&bz.status==="forfeit"&&<div style={{background:B.redL,borderRadius:10,padding:16,marginTop:4,textAlign:"center"}}>
           <div style={{fontSize:13,fontWeight:700,color:B.red,marginBottom:6}}>⚠️ PENALTY — THEY DIDN'T SHOW</div>
-          <p style={{fontSize:13,color:B.gryD,marginBottom:10}}>{(bz.creator_email||"The creator").split("@")[0]} didn't check in on time. The penalty is yours:</p>
+          <p style={{fontSize:13,color:B.gryD,marginBottom:10}}>{creatorN(bz)} didn't check in on time. The penalty is yours:</p>
           {isURL(bz.reward_link)
             ?<a href={bz.reward_link} target="_blank" rel="noopener noreferrer" style={{color:B.red,fontWeight:600,wordBreak:"break-all",fontSize:14}}>{bz.reward_link}</a>
             :<div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,flexWrap:"wrap"}}>
@@ -772,14 +773,14 @@ const Detail = ({bz,onNav,onRedeem,role,isPublic=false}) => {
 
         {/* PROMISE: RECIPIENT - REDEEMED → promise was kept, no link */}
         {isProm&&isR&&bz.status==="redeemed"&&<div style={{background:B.grnL,borderRadius:10,padding:16,marginTop:4,textAlign:"center"}}>
-          <div style={{fontSize:13,fontWeight:700,color:B.grn}}>✅ {(bz.creator_email||"Creator").split("@")[0]} kept their promise!</div>
+          <div style={{fontSize:13,fontWeight:700,color:B.grn}}>✅ {creatorN(bz)} kept their promise!</div>
           {bz.redeemed_at&&<p style={{fontSize:12,color:B.gryD,marginTop:4}}>Checked in {new Date(bz.redeemed_at).toLocaleString()}</p>}
         </div>}
 
         {/* PROMISE: RECIPIENT - ACTIVE → waiting for creator to show */}
         {isProm&&isR&&bz.status==="active"&&<div style={{background:B.off,borderRadius:10,padding:16,marginTop:4,textAlign:"center"}}>
           <div style={{fontSize:32,marginBottom:8}}>⏳</div>
-          <div style={{fontSize:14,fontWeight:700,marginBottom:4}}>Waiting for {(bz.creator_email||"creator").split("@")[0]} to check in</div>
+          <div style={{fontSize:14,fontWeight:700,marginBottom:4}}>Waiting for {creatorN(bz)} to check in</div>
           <p style={{fontSize:13,color:B.gryD}}>If they don't show up on time, you'll receive the penalty.</p>
         </div>}
 
@@ -904,7 +905,7 @@ export default function BondzyApp() {
   };
 
   const loadPublicRewardBondzy=async(id)=>{
-    const{data}=await supabase.from("bondzies").select("*").eq("id",id).eq("type","reward").single();
+    const{data}=await supabase.from("bondzies").select("*, creator:profiles!creator_id(email,name)").eq("id",id).eq("type","reward").single();
     if(data){
       setSel(data);setRole("recipient");setPg("public-detail");
       window.history.replaceState(null,"",window.location.origin);
@@ -946,7 +947,7 @@ export default function BondzyApp() {
     if(!session)return;
     const load=async()=>{
       setBzLoad(true);
-      const{data}=await supabase.from("bondzies").select("*, creator:profiles!creator_id(email)").order("created_at",{ascending:false});
+      const{data}=await supabase.from("bondzies").select("*, creator:profiles!creator_id(email,name)").order("created_at",{ascending:false});
       setBondzies((data||[]).map(b=>({...b,creator_email:b.creator_email||b.creator?.email||""})));
       setBzLoad(false);
     };
@@ -987,7 +988,7 @@ export default function BondzyApp() {
   },[session,bondzies]);
 
   const handleCreate=(newBz)=>{
-    const withEmail={...newBz,creator_email:session.user.email};
+    const withEmail={...newBz,creator_email:session.user.email,creator:{email:session.user.email,name:profile?.name||""}};
     setBondzies(prev=>[withEmail,...prev]);
     setSel(withEmail);setRole("creator");setPg("detail");
     tt(newBz.type==="promise"?"🤝 Promise Bondzy posted!":"✨ Bondzy posted!");
@@ -1020,8 +1021,8 @@ export default function BondzyApp() {
                 body:JSON.stringify({
                   sender:{name:'Bondzy',email:'info@bondzy.com'},
                   to:[{email:recipientEmail,name:redeemedBondzy.recipient_name}],
-                  subject:`✅ ${(redeemedBondzy.creator_email||"Someone").split("@")[0]} kept their promise!`,
-                  textContent:`Good news, ${redeemedBondzy.recipient_name}!\n\n${(redeemedBondzy.creator_email||"Someone").split("@")[0]} checked in and kept their Promise Bondzy.\n\nLocation: ${redeemedBondzy.location_name}\nScheduled: ${formattedDate} at ${formattedTime}\nChecked in: ${checkedInAt}\n\nThe commitment was honored — no penalty triggered.\n\nView on Bondzy: https://app.bondzy.com\n\n---\nBondzy — No More Hoping. Make Things Happen.\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`,
+                  subject:`✅ ${creatorN(redeemedBondzy)} kept their promise!`,
+                  textContent:`Good news, ${redeemedBondzy.recipient_name}!\n\n${creatorN(redeemedBondzy)} checked in and kept their Promise Bondzy.\n\nLocation: ${redeemedBondzy.location_name}\nScheduled: ${formattedDate} at ${formattedTime}\nChecked in: ${checkedInAt}\n\nThe commitment was honored — no penalty triggered.\n\nView on Bondzy: https://app.bondzy.com\n\n---\nBondzy — No More Hoping. Make Things Happen.\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`,
                   htmlContent:`
                     <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                       <div style="background:#2E8B57;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
@@ -1029,7 +1030,7 @@ export default function BondzyApp() {
                       </div>
                       <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
                         <h2 style="color:#2E8B57;margin:0 0 8px;">Good news, ${redeemedBondzy.recipient_name}!</h2>
-                        <p style="color:#5A6570;font-size:15px;line-height:1.6;"><strong>${(redeemedBondzy.creator_email||"Someone").split("@")[0]}</strong> checked in and kept their Promise Bondzy.</p>
+                        <p style="color:#5A6570;font-size:15px;line-height:1.6;"><strong>${creatorN(redeemedBondzy)}</strong> checked in and kept their Promise Bondzy.</p>
                         <div style="background:#E8F5E9;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #2E8B57;">
                           <p style="margin:4px 0;font-size:14px;">📍 <strong>Location:</strong> ${redeemedBondzy.location_name}</p>
                           <p style="margin:4px 0;font-size:14px;">📅 <strong>Scheduled:</strong> ${formattedDate} at ${formattedTime}</p>
