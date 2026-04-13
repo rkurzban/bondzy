@@ -476,6 +476,7 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
       location_name:f.locationName,location_address:f.locationAddress||"",
       location_lat:f.locationLat,location_lng:f.locationLng,
       date:f.date,time:f.time,grace_minutes:10,
+      timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC",
       reward_link:f.rewardValue,reward_description:f.rewardDescription.trim()||(isProm?"Bondzy Penalty":"Bondzy Reward"),
     }).select().single();
     setSaving(false);
