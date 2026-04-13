@@ -80,6 +80,7 @@ const Ic = ({name,size=20,color="currentColor"}) => {
     logout:<><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" strokeWidth="2"/><polyline points="16 17 21 12 16 7" strokeWidth="2"/><line x1="21" y1="12" x2="9" y2="12" strokeWidth="2"/></>,
     mail:<><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" strokeWidth="2"/><path d="M22 6l-10 7L2 6" strokeWidth="2" strokeLinecap="round"/></>,
     shield:<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
+    trash:<><polyline points="3 6 5 6 21 6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" strokeWidth="2"/><path d="M10 11v6M14 11v6" strokeWidth="2" strokeLinecap="round"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" strokeWidth="2"/></>,
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} xmlns="http://www.w3.org/2000/svg">{d[name]}</svg>;
 };
@@ -361,8 +362,9 @@ const Profile = ({email,profile,onLogout}) => (
 );
 
 // ========== DASHBOARD ==========
-const Dash = ({bondzies,email,userId,onNav,onView,filter,setFilter,tab,setTab,loading}) => {
+const Dash = ({bondzies,email,userId,onNav,onView,filter,setFilter,tab,setTab,loading,onDelete}) => {
   const [now,setNow]=useState(Date.now());
+  const [delConfirm,setDelConfirm]=useState(null);
   // Refresh every 30s to catch client-side expirations
   useEffect(()=>{const t=setInterval(()=>setNow(Date.now()),30000);return()=>clearInterval(t);},[]);
   
@@ -407,7 +409,8 @@ const Dash = ({bondzies,email,userId,onNav,onView,filter,setFilter,tab,setTab,lo
     ):(
       <div style={{display:"flex",flexDirection:"column",gap:8}}>
         {fl2.map((b,i)=>{const ds=b.displayStatus;const sc=stC(ds==="expired"?"forfeit":ds);const isR=tab==="received";const isProm=b.type==="promise";const isActive=ds==="active";return(
-          <div key={b.id} className="crd" onClick={()=>onView(b,isR?"recipient":"creator")} style={{cursor:"pointer",animation:`fadeIn 0.3s ease ${i*0.04}s both`,borderLeft:isR&&isActive?`4px solid ${B.gold}`:undefined}}>
+          <div key={b.id} className="crd" onClick={()=>onView(b,isR?"recipient":"creator")} style={{cursor:"pointer",animation:`fadeIn 0.3s ease ${i*0.04}s both`,borderLeft:isR&&isActive?`4px solid ${B.gold}`:undefined,position:"relative"}}>
+            {!isR&&!isActive&&<button onClick={e=>{e.stopPropagation();setDelConfirm(b.id);}} style={{position:"absolute",top:12,right:12,background:"none",border:"none",cursor:"pointer",padding:4,borderRadius:4,display:"flex",alignItems:"center",opacity:0.4}} onMouseEnter={e=>e.currentTarget.style.opacity=1} onMouseLeave={e=>e.currentTarget.style.opacity=0.4} title="Delete Bondzy"><Ic name="trash" size={16} color={B.red}/></button>}
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,flexWrap:"wrap"}}>
               <span style={{fontSize:16}}>{isR?(isProm?"🤝":"🎁"):(isProm?"🤝":"📤")}</span>
               <span style={{fontWeight:700,fontSize:15}}>{isR?`From ${creatorN(b)}`:`For ${b.recipient_name}`}</span>
@@ -427,6 +430,17 @@ const Dash = ({bondzies,email,userId,onNav,onView,filter,setFilter,tab,setTab,lo
         );})}
       </div>
     )}
+    {delConfirm&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>setDelConfirm(null)}>
+      <div className="crd" style={{maxWidth:360,width:"100%",padding:28,textAlign:"center"}} onClick={e=>e.stopPropagation()}>
+        <div style={{fontSize:32,marginBottom:12}}>🗑️</div>
+        <h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>Delete this Bondzy?</h3>
+        <p style={{color:B.gryD,fontSize:14,marginBottom:24}}>This is permanent and cannot be undone.</p>
+        <div style={{display:"flex",gap:10,justifyContent:"center"}}>
+          <button className="btn bo" onClick={()=>setDelConfirm(null)}>Cancel</button>
+          <button className="btn" style={{background:B.red,color:"white",border:"none"}} onClick={()=>{onDelete(delConfirm);setDelConfirm(null);}}>Delete</button>
+        </div>
+      </div>
+    </div>}
   </div>;
 };
 
@@ -1082,6 +1096,14 @@ export default function BondzyApp() {
     tt(newBz.type==="promise"?"🤝 Promise Bondzy posted!":"✨ Bondzy posted!");
   };
 
+  const handleDelete=async(id)=>{
+    const{error}=await supabase.from("bondzies").delete().eq("id",id);
+    if(!error){
+      setBondzies(prev=>prev.filter(b=>b.id!==id));
+      tt("Bondzy deleted");
+    }
+  };
+
   const handleRedeem=async(id)=>{
     const now=new Date().toISOString();
     const{error}=await supabase.from("bondzies").update({status:"redeemed",redeemed_at:now}).eq("id",id);
@@ -1198,7 +1220,7 @@ export default function BondzyApp() {
   return <div style={{minHeight:"100vh",background:B.off}}>
     <Header page={pg} onNav={nav} email={email}/>
     {pg==="landing"&&<AuthPage/>}
-    {pg==="dashboard"&&<Dash bondzies={bondzies} email={email} userId={userId} onNav={nav} filter={df} setFilter={setDf} tab={dt} setTab={setDt} loading={bzLoad} onView={(b,r)=>{setSel(b);setRole(r);setPg("detail");}}/>}
+    {pg==="dashboard"&&<Dash bondzies={bondzies} email={email} userId={userId} onNav={nav} filter={df} setFilter={setDf} tab={dt} setTab={setDt} loading={bzLoad} onView={(b,r)=>{setSel(b);setRole(r);setPg("detail");}} onDelete={handleDelete}/>}
     {pg==="create"&&<Create onNav={nav} userId={userId} onCreate={handleCreate} session={session} profile={profile} createType={createType}/>}
     {pg==="detail"&&sel&&<Detail bz={sel} onNav={nav} onRedeem={handleRedeem} role={role}/>}
     {pg==="public-detail"&&sel&&<Detail bz={sel} onNav={nav} onRedeem={handleRedeem} role={role} isPublic={true}/>}
