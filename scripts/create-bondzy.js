@@ -51,7 +51,7 @@ const BONDZY = {
   date: "2026-04-25",
   time: "14:00",
   gracePeriodMinutes: 10,
-  timezone: "America/Chicago", // IANA timezone string
+  timezone: "America/New_York", // IANA timezone string
 
   // What's at stake?
   // For "promise": describe the penalty if you don't show up.
