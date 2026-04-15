@@ -15,7 +15,7 @@
  *   - Brevo API key (optional — set SEND_EMAILS=false to skip emails)
  */
 
-import { createClient } from "@supabase/supabase-js";
+const { createClient } = require("@supabase/supabase-js");
 
 // ─── ENVIRONMENT VARIABLES ────────────────────────────────────────────────────
 // Set these in your shell before running, e.g.:
