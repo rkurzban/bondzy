@@ -38,8 +38,8 @@ const BONDZY = {
   type: "promise",
 
   // Who is this Bondzy for?
-  recipientName: "Alex Kurzban",
-  recipientEmail: "akurzban@gmail.com",
+  recipientName: "Rob Kurzban",
+  recipientEmail: "rkurzban@gmail.com",
 
   // Where?
   locationName: "The Pottery Spottery",
