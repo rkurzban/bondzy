@@ -1033,7 +1033,7 @@ export default function BondzyApp() {
     });
     const{data:{subscription}}=supabase.auth.onAuthStateChange((ev,s)=>{
       setSession(s);
-      if(s&&ev==="SIGNED_IN")setPg("dashboard");
+      if(s&&ev==="SIGNED_IN")setPg(p=>p==="loading"||p==="landing"?"dashboard":p);
       else if(!s){setPg("landing");setProfile(null);setBondzies([]);}
     });
     return()=>subscription.unsubscribe();
