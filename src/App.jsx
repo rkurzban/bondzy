@@ -584,7 +584,7 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
                     <p style="margin:8px 0 0;"><a href="https://www.bondzy.com" style="color:#1B2A4A;text-decoration:none;font-weight:600;">www.bondzy.com</a> · info@bondzy.com</p>
                   </div>
                 </div>`,
-            }),
+            },
           });
           if(creatorErr){console.error("Creator email error:",creatorErr);}
         }
