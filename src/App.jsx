@@ -1031,10 +1031,10 @@ export default function BondzyApp() {
         setPg("landing");
       }
     });
-    const{data:{subscription}}=supabase.auth.onAuthStateChange((_ev,s)=>{
+    const{data:{subscription}}=supabase.auth.onAuthStateChange((ev,s)=>{
       setSession(s);
-      if(s)setPg("dashboard");
-      else{setPg("landing");setProfile(null);setBondzies([]);}
+      if(s&&ev==="SIGNED_IN")setPg("dashboard");
+      else if(!s){setPg("landing");setProfile(null);setBondzies([]);}
     });
     return()=>subscription.unsubscribe();
   },[]);
