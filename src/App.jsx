@@ -819,7 +819,7 @@ const Detail = ({bz,onNav,onRedeem,role,isPublic=false}) => {
         
         {[
           {ic:"user",l:isProm?(!isR?"Promised To":"Promised By"):isR?"From":"Recipient",v:isProm?(!isR?`${bz.recipient_name} (${bz.recipient_email})`:creatorN(bz)):isR?creatorN(bz):`${bz.recipient_name} (${bz.recipient_email})`},
-          {ic:"pin",l:"Location",v:`${bz.location_name}${bz.location_address?"\n"+bz.location_address:""}`},
+          {ic:"pin",l:"Location",v:bz.location_address&&bz.location_address.startsWith(bz.location_name)?bz.location_address:`${bz.location_name}${bz.location_address?"\n"+bz.location_address:""}`},
           {ic:"clock",l:"Date & Time",v:`${fmtD(bz.date)} at ${fmtT(bz.time)}`},
           {ic:isProm?"zap":"gift",l:isProm?"Penalty if No-Show":"Reward",v:bz.reward_description},
         ].map((item,i)=>(
