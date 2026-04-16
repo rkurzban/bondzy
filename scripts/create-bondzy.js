@@ -181,7 +181,7 @@ function buildEmailHtml(bondzy, creatorName, isRecipient) {
     </div>
     <p style="color:#5A6570;font-size:14px;">You'll be notified when they check in — or if they don't show up.</p>
     <div style="text-align:center;margin:20px 0;">
-      <a href="https://www.bondzy.com" style="background:#1B2A4A;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">View on Bondzy</a>
+      <a href="https://app.bondzy.com?bondzy=${bondzy.id}" style="background:#1B2A4A;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">Open Bondzy</a>
     </div>
   </div>
   <div style="background:#F5F6F8;padding:16px;text-align:center;color:#5A6570;font-size:12px;border-radius:0 0 12px 12px;">
@@ -205,7 +205,7 @@ function buildEmailHtml(bondzy, creatorName, isRecipient) {
       <p style="margin:4px 0;font-size:14px;">${isProm ? "🎁" : "🎁"} <strong>${isProm ? "Penalty:" : "Reward:"}</strong> ${bondzy.reward_description}</p>
     </div>
     <div style="text-align:center;margin:20px 0;">
-      <a href="https://www.bondzy.com" style="background:#D4A843;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">View on Bondzy</a>
+      <a href="https://app.bondzy.com?bondzy=${bondzy.id}" style="background:#D4A843;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">Open Bondzy</a>
     </div>
   </div>
   <div style="background:#F5F6F8;padding:16px;text-align:center;color:#5A6570;font-size:12px;border-radius:0 0 12px 12px;">
