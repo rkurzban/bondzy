@@ -484,14 +484,11 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
     else{
       // Send notification email to recipient via Brevo
       try{
-        const BREVO_KEY=import.meta.env.VITE_BREVO_API_KEY;
-        if(BREVO_KEY){
+        {
           const formattedDate=fmtD(f.date);
           const formattedTime=fmtT(f.time);
-          const recipResp=await fetch('https://api.brevo.com/v3/smtp/email',{
-            method:'POST',
-            headers:{'api-key':BREVO_KEY,'Content-Type':'application/json'},
-            body:JSON.stringify({
+          const {error:recipErr}=await supabase.functions.invoke('send-email',{
+            body:{
               sender:{name:'Bondzy',email:'info@bondzy.com'},
               to:[{email:f.recipientEmail,name:f.recipientName}],
               subject:isProm?`🤝 ${profile?.name||session.user.email.split("@")[0]} made you a Promise Bondzy!`:`🎁 ${profile?.name||session.user.email.split("@")[0]} has a Reward Bondzy for you!`,
@@ -545,22 +542,19 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
                     <p style="margin:8px 0 0;"><a href="https://www.bondzy.com" style="color:#1B2A4A;text-decoration:none;font-weight:600;">www.bondzy.com</a> · info@bondzy.com</p>
                   </div>
                 </div>`,
-            }),
+            },
           });
-          if(!recipResp.ok){const errBody=await recipResp.json().catch(()=>({}));console.error("Recipient email error:",recipResp.status,errBody);}
+          if(recipErr){console.error("Recipient email error:",recipErr);}
         }
       }catch(emailErr){console.log("Email notification failed:",emailErr);}
       
       // Send confirmation email to creator
       try{
-        const BREVO_KEY=import.meta.env.VITE_BREVO_API_KEY;
-        if(BREVO_KEY){
+        {
           const formattedDate=fmtD(f.date);
           const formattedTime=fmtT(f.time);
-          const creatorResp=await fetch('https://api.brevo.com/v3/smtp/email',{
-            method:'POST',
-            headers:{'api-key':BREVO_KEY,'Content-Type':'application/json'},
-            body:JSON.stringify({
+          const {error:creatorErr}=await supabase.functions.invoke('send-email',{
+            body:{
               sender:{name:'Bondzy',email:'info@bondzy.com'},
               to:[{email:session.user.email}],
               subject:isProm?'🤝 Your Promise Bondzy is posted!':'✅ Your Bondzy is posted!',
@@ -592,7 +586,7 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
                 </div>`,
             }),
           });
-          if(!creatorResp.ok){const errBody=await creatorResp.json().catch(()=>({}));console.error("Creator email error:",creatorResp.status,errBody);}
+          if(creatorErr){console.error("Creator email error:",creatorErr);}
         }
       }catch(emailErr){console.log("Creator confirmation email failed:",emailErr);}
       
@@ -1118,18 +1112,15 @@ export default function BondzyApp() {
       // Send notification email
       if(redeemedBondzy){
         try{
-          const BREVO_KEY=import.meta.env.VITE_BREVO_API_KEY;
           if(isProm){
             // PROMISE: Creator checked in → notify recipient that promise was kept
             const recipientEmail=redeemedBondzy.recipient_email;
-            if(BREVO_KEY&&recipientEmail){
+            if(recipientEmail){
               const formattedDate=fmtD(redeemedBondzy.date);
               const formattedTime=fmtT(redeemedBondzy.time);
               const checkedInAt=new Date(now).toLocaleString();
-              await fetch('https://api.brevo.com/v3/smtp/email',{
-                method:'POST',
-                headers:{'api-key':BREVO_KEY,'Content-Type':'application/json'},
-                body:JSON.stringify({
+              await supabase.functions.invoke('send-email',{
+                body:{
                   sender:{name:'Bondzy',email:'info@bondzy.com'},
                   to:[{email:recipientEmail,name:redeemedBondzy.recipient_name}],
                   subject:`✅ ${creatorN(redeemedBondzy)} kept their promise!`,
@@ -1158,20 +1149,18 @@ export default function BondzyApp() {
                         <p style="margin:8px 0 0;"><a href="https://www.bondzy.com" style="color:#1B2A4A;text-decoration:none;font-weight:600;">www.bondzy.com</a> · info@bondzy.com</p>
                       </div>
                     </div>`,
-                }),
+                },
               });
             }
           }else{
             // REWARD: Recipient claimed → notify creator
             const creatorEmail=redeemedBondzy.creator_email;
-            if(BREVO_KEY&&creatorEmail){
+            if(creatorEmail){
             const formattedDate=fmtD(redeemedBondzy.date);
             const formattedTime=fmtT(redeemedBondzy.time);
             const redeemedAt=new Date(now).toLocaleString();
-            const redeemResp=await fetch('https://api.brevo.com/v3/smtp/email',{
-              method:'POST',
-              headers:{'api-key':BREVO_KEY,'Content-Type':'application/json'},
-              body:JSON.stringify({
+            const {error:redeemErr}=await supabase.functions.invoke('send-email',{
+              body:{
                 sender:{name:'Bondzy',email:'info@bondzy.com'},
                 to:[{email:creatorEmail}],
                 subject:`🎉 ${redeemedBondzy.recipient_name} claimed your Bondzy!`,
@@ -1201,9 +1190,9 @@ export default function BondzyApp() {
                       <p style="margin:8px 0 0;"><a href="https://www.bondzy.com" style="color:#1B2A4A;text-decoration:none;font-weight:600;">www.bondzy.com</a> · info@bondzy.com</p>
                     </div>
                   </div>`,
-              }),
+              },
             });
-            if(!redeemResp.ok){const errBody=await redeemResp.json().catch(()=>({}));console.error("Redemption email error:",redeemResp.status,errBody);}
+            if(redeemErr){console.error("Redemption email error:",redeemErr);}
           }
           }
         }catch(emailErr){console.log("Redemption notification failed:",emailErr);}
