@@ -189,6 +189,9 @@ const AuthPage=()=>{
     {/* ── HERO ── */}
     <div style={{background:`linear-gradient(150deg,${B.navy} 0%,#1e3a6e 60%,#162d58 100%)`,padding:"72px 20px 64px",textAlign:"center",color:B.wh}}>
       <div style={{maxWidth:640,margin:"0 auto"}}>
+        <div style={{marginBottom:24}}>
+          <img src="/bondzymarkv1.png" alt="Bondzy" style={{height:72,width:72,objectFit:"contain"}}/>
+        </div>
         <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(212,168,67,0.18)",border:"1px solid rgba(212,168,67,0.4)",padding:"6px 18px",borderRadius:20,fontSize:13,fontWeight:700,color:B.goldL,marginBottom:32,letterSpacing:0.3}}>
           <Ic name="zap" size={13} color={B.gold}/> Free During Beta
         </div>
@@ -320,7 +323,10 @@ const AuthPage=()=>{
 
     {/* ── FOOTER ── */}
     <div style={{textAlign:"center",padding:"28px 20px",borderTop:`1px solid ${B.bdr}`,color:B.gry,fontSize:13}}>
-      <span style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:B.navy,display:"block",marginBottom:6}}>Bondzy</span>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:6}}>
+        <img src="/bondzymarkv1.png" alt="" style={{height:24,width:24,objectFit:"contain"}}/>
+        <span style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:B.navy}}>Bondzy</span>
+      </div>
       © 2026 ·{" "}<a href="https://www.bondzy.com" target="_blank" rel="noopener noreferrer" style={{color:B.gry,textDecoration:"none"}} onMouseOver={e=>e.currentTarget.style.color=B.navy} onMouseOut={e=>e.currentTarget.style.color=B.gry}>www.bondzy.com</a>{" "}· info@bondzy.com
     </div>
 
@@ -511,7 +517,7 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
               htmlContent:isProm?`
                 <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                   <div style="background:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
-                    <h1 style="color:#D4A843;margin:0;font-size:24px;">🤝 Bondzy</h1>
+                    <img src="https://app.bondzy.com/bondzymarkv1.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:#D4A843;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
                   </div>
                   <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
                     <h2 style="color:#1B2A4A;margin:0 0 8px;">Hi ${f.recipientName}! 👋</h2>
@@ -535,7 +541,7 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
                 </div>`:`
                 <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                   <div style="background:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
-                    <h1 style="color:#D4A843;margin:0;font-size:24px;">✨ Bondzy</h1>
+                    <img src="https://app.bondzy.com/bondzymarkv1.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:#D4A843;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
                   </div>
                   <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
                     <h2 style="color:#1B2A4A;margin:0 0 8px;">Hi ${f.recipientName}! 👋</h2>
@@ -577,7 +583,7 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
               htmlContent:`
                 <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                   <div style="background:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
-                    <h1 style="color:#D4A843;margin:0;font-size:24px;">${isProm?"🤝":"✨"} Bondzy</h1>
+                    <img src="https://app.bondzy.com/bondzymarkv1.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:#D4A843;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
                   </div>
                   <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
                     <h2 style="color:#1B2A4A;margin:0 0 8px;">${isProm?"🤝 Promise Bondzy Posted!":"✅ Bondzy Posted Successfully!"}</h2>
