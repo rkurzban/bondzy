@@ -1,0 +1,19 @@
+<svg width="200" height="240" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Pin head -->
+  <path d="M56,44 Q40,38 40,20 A16,16 0 0,0 72,20 Q72,38 56,44Z" fill="#D4A843"/>
+  <!-- Clock face -->
+  <circle cx="56" cy="20" r="7" fill="white"/>
+  <!-- Clock hands -->
+  <line x1="56" y1="20" x2="56" y2="14" stroke="#D4A843" stroke-width="2" stroke-linecap="round"/>
+  <line x1="56" y1="20" x2="61" y2="23" stroke="#D4A843" stroke-width="2" stroke-linecap="round"/>
+  <!-- Body -->
+  <path d="M56,44 Q46,60 40,75" stroke="#D4A843" stroke-width="8" stroke-linecap="round" fill="none"/>
+  <!-- Forward arm -->
+  <path d="M50,56 Q33,47 18,42" stroke="#D4A843" stroke-width="8" stroke-linecap="round" fill="none"/>
+  <!-- Back arm -->
+  <path d="M50,56 Q64,63 76,72" stroke="#D4A843" stroke-width="8" stroke-linecap="round" fill="none"/>
+  <!-- Forward leg -->
+  <path d="M40,75 Q25,95 16,112" stroke="#D4A843" stroke-width="8" stroke-linecap="round" fill="none"/>
+  <!-- Back leg -->
+  <path d="M40,75 Q58,90 70,87" stroke="#D4A843" stroke-width="8" stroke-linecap="round" fill="none"/>
+</svg>
