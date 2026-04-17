@@ -102,15 +102,15 @@ const isURL=s=>/^https?:\/\//i.test(s||"");
 // ========== LOGO MARK ==========
 const BondzyMark = ({size=26}) => (
   <svg width={size} height={size*1.2} viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M56,44 Q40,38 40,20 A16,16 0 0,0 72,20 Q72,38 56,44Z" fill="#D4A843"/>
+    <path d="M56,44 Q40,38 40,20 A16,16 0 0,1 72,20 Q72,38 56,44Z" fill="#D4A843"/>
     <circle cx="56" cy="20" r="7" fill="white"/>
-    <line x1="56" y1="20" x2="56" y2="14" stroke="#D4A843" strokeWidth="2" strokeLinecap="round"/>
-    <line x1="56" y1="20" x2="61" y2="23" stroke="#D4A843" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M56,44 Q46,60 40,75" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
-    <path d="M50,56 Q33,47 18,42" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
-    <path d="M50,56 Q64,63 76,72" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
-    <path d="M40,75 Q25,95 16,112" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
-    <path d="M40,75 Q58,90 70,87" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
+    <line x1="56" y1="20" x2="52" y2="14" stroke="#D4A843" strokeWidth="1.5" strokeLinecap="round"/>
+    <line x1="56" y1="20" x2="62" y2="22" stroke="#D4A843" strokeWidth="1.5" strokeLinecap="round"/>
+    <path d="M56,44 Q46,60 40,76" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
+    <path d="M50,55 Q33,46 18,38" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
+    <path d="M50,55 Q65,64 78,70" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
+    <path d="M40,76 Q25,95 16,112" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
+    <path d="M40,76 Q54,86 62,90 Q74,84 76,72" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
   </svg>
 );
 
