@@ -174,14 +174,14 @@ function buildEmailHtml(bondzy, creatorName, isRecipient) {
     <p style="color:#5A6570;line-height:1.6;">${creatorName} is committing to be at a specific place at a specific time. If they don't show up, you get the penalty!</p>
     <div style="background:#F5F6F8;border-radius:10px;padding:16px;margin:16px 0;">
       <p style="margin:4px 0;font-size:14px;">🤝 <strong>Commitment by:</strong> ${creatorName}</p>
-      <p style="margin:4px 0;font-size:14px;">📍 <strong>Location:</strong> ${bondzy.location_name}</p>
+      <p style="margin:4px 0;font-size:14px;">📍 <strong>Location:</strong> ${bondzy.location_name}${bondzy.location_address ? ', ' + bondzy.location_address : ''}</p>
       <p style="margin:4px 0;font-size:14px;">📅 <strong>When:</strong> ${formattedDate} at ${formattedTime}</p>
       <p style="margin:4px 0;font-size:14px;">⏰ <strong>Grace period:</strong> ${bondzy.grace_minutes} minutes</p>
       <p style="margin:4px 0;font-size:14px;">🎁 <strong>Penalty if they miss:</strong> ${bondzy.reward_description}</p>
     </div>
-    <p style="color:#5A6570;font-size:14px;">You'll be notified when they check in — or if they don't show up.</p>
+    <p style="color:#5A6570;font-size:14px;">Click the button below to track this commitment — you'll receive the penalty automatically if they don't show up!</p>
     <div style="text-align:center;margin:20px 0;">
-      <a href="https://app.bondzy.com?bondzy=${bondzy.id}" style="background:#1B2A4A;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">Open Bondzy</a>
+      <a href="https://app.bondzy.com?bondzy=${bondzy.id}" style="background:#1B2A4A;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">My Bondzy</a>
     </div>
   </div>
   <div style="background:#F5F6F8;padding:16px;text-align:center;color:#5A6570;font-size:12px;border-radius:0 0 12px 12px;">
@@ -199,13 +199,13 @@ function buildEmailHtml(bondzy, creatorName, isRecipient) {
   <div style="background:white;padding:24px;border:1px solid #E8E9EB;border-top:none;">
     <h2 style="color:#1B2A4A;margin:0 0 16px;">${isProm ? "Your Promise Bondzy is posted!" : `${creatorName} has a Reward Bondzy for you!`}</h2>
     <div style="background:#F5F6F8;border-radius:10px;padding:16px;margin:16px 0;">
-      <p style="margin:4px 0;font-size:14px;">📍 <strong>Location:</strong> ${bondzy.location_name}</p>
+      <p style="margin:4px 0;font-size:14px;">📍 <strong>Location:</strong> ${bondzy.location_name}${bondzy.location_address ? ', ' + bondzy.location_address : ''}</p>
       <p style="margin:4px 0;font-size:14px;">📅 <strong>When:</strong> ${formattedDate} at ${formattedTime}</p>
       <p style="margin:4px 0;font-size:14px;">⏰ <strong>Grace period:</strong> ${bondzy.grace_minutes} minutes</p>
       <p style="margin:4px 0;font-size:14px;">${isProm ? "🎁" : "🎁"} <strong>${isProm ? "Penalty:" : "Reward:"}</strong> ${bondzy.reward_description}</p>
     </div>
     <div style="text-align:center;margin:20px 0;">
-      <a href="https://app.bondzy.com?bondzy=${bondzy.id}" style="background:#D4A843;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">Open Bondzy</a>
+      <a href="https://app.bondzy.com?bondzy=${bondzy.id}" style="background:#D4A843;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">My Bondzy</a>
     </div>
   </div>
   <div style="background:#F5F6F8;padding:16px;text-align:center;color:#5A6570;font-size:12px;border-radius:0 0 12px 12px;">
