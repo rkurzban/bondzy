@@ -99,12 +99,27 @@ const getDist=(a,b,c,d)=>{const R=6371000,dL=((c-a)*Math.PI)/180,dN=((d-b)*Math.
 const isExpiredClient=(b)=>{if(b.status!=="active"||!b.date||!b.time)return false;const end=new Date(`${b.date}T${b.time}`).getTime()+(b.grace_minutes||10)*60000;return Date.now()>end;};
 const isURL=s=>/^https?:\/\//i.test(s||"");
 
+// ========== LOGO MARK ==========
+const BondzyMark = ({size=26}) => (
+  <svg width={size} height={size*1.2} viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M56,44 Q40,38 40,20 A16,16 0 0,1 72,20 Q72,38 56,44Z" fill="#D4A843"/>
+    <circle cx="56" cy="20" r="7" fill="white"/>
+    <line x1="56" y1="20" x2="52" y2="14" stroke="#D4A843" strokeWidth="1.5" strokeLinecap="round"/>
+    <line x1="56" y1="20" x2="62" y2="22" stroke="#D4A843" strokeWidth="1.5" strokeLinecap="round"/>
+    <path d="M56,44 Q46,60 40,76" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
+    <path d="M50,55 Q33,46 18,38" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
+    <path d="M50,55 Q65,64 78,70" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
+    <path d="M40,76 Q25,95 16,112" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
+    <path d="M40,76 Q54,86 62,90 Q74,84 76,72" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+  </svg>
+);
+
 // ========== HEADER ==========
 const Header = ({page,onNav,email}) => (
   <div style={{background:B.navy,padding:"0 20px",position:"sticky",top:0,zIndex:100,boxShadow:"0 2px 10px rgba(0,0,0,0.15)"}}>
     <div style={{maxWidth:900,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",height:56}}>
       <div onClick={()=>onNav(email?"dashboard":"landing")} style={{cursor:"pointer",display:"flex",alignItems:"center",gap:8}}>
-        <span style={{fontSize:18}}>✨</span>
+        <img src="/bondzymarkv1.png" alt="Bondzy" style={{height:32,width:32,objectFit:"contain"}}/>
         <span style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:B.wh}}>Bondzy</span>
       </div>
       {email&&<div style={{display:"flex",alignItems:"center",gap:4}}>
