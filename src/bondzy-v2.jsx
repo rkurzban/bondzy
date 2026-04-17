@@ -465,12 +465,15 @@ const EmailPrev = ({bz,onClose}) => (
             <p>Hi {bz.recipientName}! 👋</p>
             <p style={{marginTop:8}}>Someone buried a treasure for you using Bondzy!</p>
             <div style={{background:B.goldL,borderRadius:8,padding:12,margin:"10px 0"}}>
-              <div>📍 <strong>Go to:</strong> {bz.locationName}</div>
+              <div>📍 <strong>Go to:</strong> {bz.locationName}{bz.locationAddress ? `, ${bz.locationAddress}` : ''}</div>
               <div>📅 <strong>When:</strong> {fmtD(bz.date)} at {fmtT(bz.time)}</div>
-              <div>⏰ <strong>Grace:</strong> {bz.graceMinutes} minutes</div>
+              <div>⏰ <strong>Grace period:</strong> {bz.graceMinutes} minutes</div>
               <div>🎁 <strong>Reward:</strong> {bz.rewardDescription}</div>
             </div>
-            <p style={{marginTop:8}}>Open Bondzy at the right place and time to claim your reward!</p>
+            <p style={{marginTop:8}}>Click the button below when you are at {bz.locationName} to claim your reward!</p>
+            <div style={{textAlign:"center",marginTop:12}}>
+              <span style={{background:"#D4A843",color:"white",padding:"10px 28px",borderRadius:8,fontWeight:"bold",fontSize:14,display:"inline-block"}}>My Bondzy</span>
+            </div>
           </div>
         </div>
       </div>
