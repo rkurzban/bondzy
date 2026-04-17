@@ -97,12 +97,27 @@ const fmtT = t => { const [h,m]=t.split(":"); const hr=parseInt(h); return `${hr
 const stC = s => ({active:{bg:B.bluL,tx:B.blu},redeemed:{bg:B.grnL,tx:B.grn},forfeit:{bg:B.redL,tx:B.red}}[s]||{bg:B.gryL,tx:B.gryD});
 const dist = (a,b,c,d) => { const R=6371000,dL=((c-a)*Math.PI)/180,dN=((d-b)*Math.PI)/180; const x=Math.sin(dL/2)**2+Math.cos((a*Math.PI)/180)*Math.cos((c*Math.PI)/180)*Math.sin(dN/2)**2; return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x)); };
 
+// ========== LOGO MARK ==========
+const BondzyMark = ({size=26}) => (
+  <svg width={size} height={size*1.2} viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M56,44 Q40,38 40,20 A16,16 0 0,0 72,20 Q72,38 56,44Z" fill="#D4A843"/>
+    <circle cx="56" cy="20" r="7" fill="white"/>
+    <line x1="56" y1="20" x2="56" y2="14" stroke="#D4A843" strokeWidth="2" strokeLinecap="round"/>
+    <line x1="56" y1="20" x2="61" y2="23" stroke="#D4A843" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M56,44 Q46,60 40,75" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
+    <path d="M50,56 Q33,47 18,42" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
+    <path d="M50,56 Q64,63 76,72" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
+    <path d="M40,75 Q25,95 16,112" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
+    <path d="M40,75 Q58,90 70,87" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
+  </svg>
+);
+
 // ========== HEADER — dark navy from Adalo ==========
 const Header = ({page,onNav,email}) => (
   <div style={{background:B.navy,padding:"0 20px",position:"sticky",top:0,zIndex:100,boxShadow:"0 2px 10px rgba(0,0,0,0.15)"}}>
     <div style={{maxWidth:900,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",height:56}}>
       <div onClick={()=>onNav(email?"dashboard":"landing")} style={{cursor:"pointer",display:"flex",alignItems:"center",gap:8}}>
-        <span style={{fontSize:18}}>✨</span>
+        <BondzyMark size={26}/>
         <span style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:B.wh}}>Bondzy</span>
       </div>
       {email && <div style={{display:"flex",alignItems:"center",gap:4}}>
