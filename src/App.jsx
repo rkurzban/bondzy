@@ -513,7 +513,7 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
               sender:{name:'Bondzy',email:'info@bondzy.com'},
               to:[{email:f.recipientEmail,name:f.recipientName}],
               subject:isProm?`🤝 ${profile?.name||session.user.email.split("@")[0]} made you a Promise Bondzy!`:`🎁 ${profile?.name||session.user.email.split("@")[0]} has a Reward Bondzy for you!`,
-              textContent:isProm?`Hi ${f.recipientName}!\n\n${profile?.name||session.user.email.split("@")[0]} made a Promise Bondzy to you — they're committing to be somewhere at a specific time. If they don't show up, you get the penalty!\n\nWho: ${profile?.name||session.user.email}\nWhere: ${f.locationName}${f.locationAddress ? ', ' + f.locationAddress : ''}\nWhen: ${formattedDate} at ${formattedTime}\nPenalty if no-show: ${f.rewardDescription.trim()||'Bondzy Penalty'}\n\nClick the button below to track this commitment — you'll receive the penalty automatically if they don't show up!\n\nMy Bondzy: https://app.bondzy.com?bondzy=${data.id}\n\n---\nBondzy—Make Things Happen!\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`:`Hi ${f.recipientName}!\n\n${profile?.name||session.user.email.split("@")[0]} buried a treasure for you using Bondzy! Show up at the right place and time to claim your reward.\n\nGo to: ${f.locationName}${f.locationAddress ? ', ' + f.locationAddress : ''}\nWhen: ${formattedDate} at ${formattedTime}\nGrace period: 10 minutes\nReward: ${f.rewardDescription.trim()||'Bondzy Reward'}\n\nClick the button below when you are at ${f.locationName} to claim your reward!\n\nMy Bondzy: https://app.bondzy.com?bondzy=${data.id}\n\n---\nBondzy—Make Things Happen!\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`,
+              textContent:isProm?`Hi ${f.recipientName}!\n\n${profile?.name||session.user.email.split("@")[0]} made a Promise Bondzy to you — they're committing to be somewhere at a specific time. If they don't show up, you get the penalty!\n\nWho: ${profile?.name||session.user.email}\nWhere: ${f.locationName}${f.locationAddress ? ', ' + f.locationAddress : ''}\nWhen: ${formattedDate} at ${formattedTime}\nPenalty if no-show: ${f.rewardDescription.trim()||'Bondzy Penalty'}\n\nClick the button below to track this commitment — you'll receive the penalty automatically if they don't show up!\n\nMy Bondzy: https://app.bondzy.com?bondzy=${data.id}\n\n---\nBondzy—Make Things Happen!\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`:`Hi ${f.recipientName}!\n\nShow up on time for your appointment to claim your reward.\n\nGo to: ${f.locationName}${f.locationAddress ? ', ' + f.locationAddress : ''}\nWhen: ${formattedDate} at ${formattedTime}\nGrace period: 10 minutes\nReward: ${f.rewardDescription.trim()||'Bondzy Reward'}\n\nClick the button below when you are at ${f.locationName} to claim your reward!\n\nMy Bondzy: https://app.bondzy.com?bondzy=${data.id}\n\n---\nBondzy—Make Things Happen!\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`,
               htmlContent:isProm?`
                 <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                   <div style="background:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
@@ -545,7 +545,7 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
                   </div>
                   <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
                     <h2 style="color:#1B2A4A;margin:0 0 8px;">Hi ${f.recipientName}! 👋</h2>
-                    <p style="color:#5A6570;font-size:15px;line-height:1.6;"><strong>${profile?.name||session.user.email.split("@")[0]}</strong> buried a treasure for you using Bondzy! Show up at the right place and time to claim your reward.</p>
+                    <p style="color:#5A6570;font-size:15px;line-height:1.6;">Show up on time for your appointment to claim your reward.</p>
                     <div style="background:#FFF8E7;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #D4A843;">
                       <p style="margin:4px 0;font-size:14px;">📍 <strong>Go to:</strong> ${f.locationName}${f.locationAddress ? ', ' + f.locationAddress : ''}</p>
                       <p style="margin:4px 0;font-size:14px;">📅 <strong>When:</strong> ${formattedDate} at ${formattedTime}</p>
@@ -815,6 +815,10 @@ const Detail = ({bz,onNav,onRedeem,role,isPublic=false}) => {
     
     <div style={{background:B.wh,borderRadius:14,border:`2px solid ${bz.status==="redeemed"?B.grn:bz.status==="forfeit"?B.red:B.navy}`,overflow:"hidden",animation:"slideUp 0.4s ease"}}>
       <div style={{background:bz.status==="redeemed"?B.grn:bz.status==="forfeit"?B.red:B.navy,padding:"22px 24px",color:"white",textAlign:"center"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:12}}>
+          <img src="/bondzymarkv1.png" alt="Bondzy" style={{height:36,width:36,objectFit:"contain",borderRadius:6,flexShrink:0}}/>
+          <span style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:"white"}}>Bondzy</span>
+        </div>
         <div style={{fontSize:11,fontWeight:800,letterSpacing:1.5,marginBottom:6,opacity:0.8}}>{isProm?"PROMISE BONDZY":"REWARD BONDZY"}</div>
         <div style={{fontSize:22,fontFamily:"'DM Serif Display',serif"}}>
           {isProm
@@ -1149,7 +1153,7 @@ export default function BondzyApp() {
                   htmlContent:`
                     <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                       <div style="background:#2E8B57;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
-                        <h1 style="color:white;margin:0;font-size:24px;">✅ Promise Kept!</h1>
+                        <img src="https://app.bondzy.com/bondzymarkv1.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:white;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
                       </div>
                       <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
                         <h2 style="color:#2E8B57;margin:0 0 8px;">Good news, ${redeemedBondzy.recipient_name}!</h2>
@@ -1189,7 +1193,7 @@ export default function BondzyApp() {
                 htmlContent:`
                   <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                     <div style="background:#2E8B57;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
-                      <h1 style="color:white;margin:0;font-size:24px;">🎉 Bondzy Redeemed!</h1>
+                      <img src="https://app.bondzy.com/bondzymarkv1.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:white;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
                     </div>
                     <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
                       <h2 style="color:#2E8B57;margin:0 0 8px;">Success! ${redeemedBondzy.recipient_name} showed up!</h2>

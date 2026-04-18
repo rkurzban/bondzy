@@ -162,11 +162,11 @@ Deno.serve(async (req: Request) => {
             : "🎁 Someone has a Reward Bondzy for you!",
           textContent: isPromise
             ? `Hi ${recipientName}!\n\nSomeone made a Promise Bondzy to you — they're committing to be somewhere at a specific time. If they don't show up, you get the penalty!\n\nWho: ${creatorEmail}\nWhere: ${locationName}\nWhen: ${formattedDate} at ${formattedTime}\nPenalty if no-show: ${rewardDescription}\n\nIf they don't verify their GPS at the location in time, you'll automatically receive the penalty link.\n\nOpen Bondzy: https://app.bondzy.com\n\n---\nBondzy — No More Hoping. Make Things Happen.\nhttps://www.bondzy.com | info@bondzy.com`
-            : `Hi ${recipientName}!\n\nSomeone buried a treasure for you using Bondzy! Show up at the right place and time to claim your reward.\n\nGo to: ${locationName}\nWhen: ${formattedDate} at ${formattedTime}\nGrace period: ${graceMinutes} minutes\nReward: ${rewardDescription}\n\nOpen Bondzy at the right place and time, verify your GPS, and the treasure is yours!\n\nOpen Bondzy: https://app.bondzy.com\n\n---\nBondzy — No More Hoping. Make Things Happen.\nhttps://www.bondzy.com | info@bondzy.com`,
+            : `Hi ${recipientName}!\n\nShow up on time for your appointment to claim your reward.\n\nGo to: ${locationName}\nWhen: ${formattedDate} at ${formattedTime}\nGrace period: ${graceMinutes} minutes\nReward: ${rewardDescription}\n\nOpen Bondzy at the right place and time, verify your GPS, and the treasure is yours!\n\nOpen Bondzy: https://app.bondzy.com\n\n---\nBondzy — No More Hoping. Make Things Happen.\nhttps://www.bondzy.com | info@bondzy.com`,
           htmlContent: isPromise
             ? `<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                 <div style="background:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
-                  <h1 style="color:#D4A843;margin:0;font-size:24px;">🤝 Bondzy</h1>
+                  <img src="https://app.bondzy.com/bondzymarkv1.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:#D4A843;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
                 </div>
                 <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
                   <h2 style="color:#1B2A4A;margin:0 0 8px;">Hi ${recipientName}! 👋</h2>
@@ -189,11 +189,11 @@ Deno.serve(async (req: Request) => {
               </div>`
             : `<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                 <div style="background:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
-                  <h1 style="color:#D4A843;margin:0;font-size:24px;">✨ Bondzy</h1>
+                  <img src="https://app.bondzy.com/bondzymarkv1.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:#D4A843;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
                 </div>
                 <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
                   <h2 style="color:#1B2A4A;margin:0 0 8px;">Hi ${recipientName}! 👋</h2>
-                  <p style="color:#5A6570;font-size:15px;line-height:1.6;">Someone buried a treasure for you using Bondzy! Show up at the right place and time to claim your reward.</p>
+                  <p style="color:#5A6570;font-size:15px;line-height:1.6;">Show up on time for your appointment to claim your reward.</p>
                   <div style="background:#FFF8E7;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #D4A843;">
                     <p style="margin:4px 0;font-size:14px;">📍 <strong>Go to:</strong> ${locationName}</p>
                     <p style="margin:4px 0;font-size:14px;">📅 <strong>When:</strong> ${formattedDate} at ${formattedTime}</p>
@@ -238,7 +238,7 @@ Deno.serve(async (req: Request) => {
           }\n\nView Dashboard: https://app.bondzy.com\n\n---\nBondzy — No More Hoping. Make Things Happen.\nhttps://www.bondzy.com | info@bondzy.com`,
           htmlContent: `<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
               <div style="background:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
-                <h1 style="color:#D4A843;margin:0;font-size:24px;">${isPromise ? "🤝" : "✨"} Bondzy</h1>
+                <img src="https://app.bondzy.com/bondzymarkv1.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:#D4A843;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
               </div>
               <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
                 <h2 style="color:#1B2A4A;margin:0 0 8px;">${isPromise ? "🤝 Promise Bondzy Posted!" : "✅ Bondzy Posted Successfully!"}</h2>
