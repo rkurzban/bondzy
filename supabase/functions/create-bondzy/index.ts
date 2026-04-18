@@ -166,7 +166,7 @@ Deno.serve(async (req: Request) => {
           htmlContent: isPromise
             ? `<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                 <div style="background:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
-                  <img src="https://app.bondzy.com/bondzymarkv1.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:#D4A843;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
+                  <img src="https://app.bondzy.com/bondzymarkv2.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:#D4A843;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
                 </div>
                 <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
                   <h2 style="color:#1B2A4A;margin:0 0 8px;">Hi ${recipientName}! 👋</h2>
@@ -189,7 +189,7 @@ Deno.serve(async (req: Request) => {
               </div>`
             : `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;background:#ffffff;">
                 <div style="background:#1B2A4A;padding:16px 28px;text-align:center;border-radius:12px 12px 0 0;">
-                  <img src="https://app.bondzy.com/bondzymarkv1.png" alt="Bondzy" width="36" height="36" style="display:inline-block;vertical-align:middle;margin-right:8px;border:0;border-radius:6px;"/>
+                  <img src="https://app.bondzy.com/bondzymarkv2.png" alt="Bondzy" width="36" height="36" style="display:inline-block;vertical-align:middle;margin-right:8px;border:0;border-radius:6px;"/>
                   <span style="color:#D4A843;font-size:18px;font-weight:700;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
                 </div>
                 <div style="background:#1B2A4A;padding:36px 28px 44px;text-align:center;">
@@ -294,7 +294,7 @@ Deno.serve(async (req: Request) => {
           }\n\nView Dashboard: https://app.bondzy.com\n\n---\nBondzy — No More Hoping. Make Things Happen.\nhttps://www.bondzy.com | info@bondzy.com`,
           htmlContent: `<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
               <div style="background:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
-                <img src="https://app.bondzy.com/bondzymarkv1.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:#D4A843;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
+                <img src="https://app.bondzy.com/bondzymarkv2.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:#D4A843;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
               </div>
               <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
                 <h2 style="color:#1B2A4A;margin:0 0 8px;">${isPromise ? "🤝 Promise Bondzy Posted!" : "✅ Bondzy Posted Successfully!"}</h2>

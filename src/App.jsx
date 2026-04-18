@@ -101,16 +101,26 @@ const isURL=s=>/^https?:\/\//i.test(s||"");
 
 // ========== LOGO MARK ==========
 const BondzyMark = ({size=26}) => (
-  <svg width={size} height={size*1.2} viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M56,44 Q40,38 40,20 A16,16 0 0,1 72,20 Q72,38 56,44Z" fill="#D4A843"/>
-    <circle cx="56" cy="20" r="7" fill="white"/>
-    <line x1="56" y1="20" x2="52" y2="14" stroke="#D4A843" strokeWidth="1.5" strokeLinecap="round"/>
-    <line x1="56" y1="20" x2="62" y2="22" stroke="#D4A843" strokeWidth="1.5" strokeLinecap="round"/>
-    <path d="M56,44 Q46,60 40,76" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
-    <path d="M50,55 Q33,46 18,38" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
-    <path d="M50,55 Q65,64 78,70" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
-    <path d="M40,76 Q25,95 16,112" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" fill="none"/>
-    <path d="M40,76 Q54,86 62,90 Q74,84 76,72" stroke="#D4A843" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+  <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* Location pin head */}
+    <path d="M54,38 Q41,33 41,19 A13,13 0 0,1 67,19 Q67,33 54,38Z" fill="#D4A843"/>
+    {/* Clock face */}
+    <circle cx="54" cy="19" r="8" fill="white"/>
+    {/* Clock hands */}
+    <line x1="54" y1="19" x2="49" y2="13" stroke="#D4A843" strokeWidth="2" strokeLinecap="round"/>
+    <line x1="54" y1="19" x2="59" y2="22" stroke="#D4A843" strokeWidth="2" strokeLinecap="round"/>
+    {/* Torso */}
+    <line x1="53" y1="38" x2="49" y2="65" stroke="#D4A843" strokeWidth="12" strokeLinecap="round"/>
+    {/* Rear arm (back-left) */}
+    <line x1="51" y1="51" x2="24" y2="61" stroke="#D4A843" strokeWidth="10" strokeLinecap="round"/>
+    {/* Front arm (forward-right) */}
+    <line x1="53" y1="48" x2="77" y2="37" stroke="#D4A843" strokeWidth="10" strokeLinecap="round"/>
+    {/* Front leg upper */}
+    <line x1="45" y1="65" x2="34" y2="79" stroke="#D4A843" strokeWidth="10" strokeLinecap="round"/>
+    {/* Front leg lower / foot */}
+    <line x1="34" y1="79" x2="21" y2="87" stroke="#D4A843" strokeWidth="10" strokeLinecap="round"/>
+    {/* Rear leg */}
+    <line x1="52" y1="65" x2="68" y2="88" stroke="#D4A843" strokeWidth="10" strokeLinecap="round"/>
   </svg>
 );
 
@@ -190,7 +200,7 @@ const AuthPage=()=>{
     <div style={{background:`linear-gradient(150deg,${B.navy} 0%,#1e3a6e 60%,#162d58 100%)`,padding:"72px 20px 64px",textAlign:"center",color:B.wh}}>
       <div style={{maxWidth:640,margin:"0 auto"}}>
         <div style={{marginBottom:24}}>
-          <img src="/bondzymarkv1.png" alt="Bondzy" style={{height:72,width:72,objectFit:"contain"}}/>
+          <img src="/bondzymarkv2.png" alt="Bondzy" style={{height:72,width:72,objectFit:"contain"}}/>
         </div>
         <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(212,168,67,0.18)",border:"1px solid rgba(212,168,67,0.4)",padding:"6px 18px",borderRadius:20,fontSize:13,fontWeight:700,color:B.goldL,marginBottom:32,letterSpacing:0.3}}>
           <Ic name="zap" size={13} color={B.gold}/> Free During Beta
@@ -324,7 +334,7 @@ const AuthPage=()=>{
     {/* ── FOOTER ── */}
     <div style={{textAlign:"center",padding:"28px 20px",borderTop:`1px solid ${B.bdr}`,color:B.gry,fontSize:13}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:6}}>
-        <img src="/bondzymarkv1.png" alt="" style={{height:24,width:24,objectFit:"contain"}}/>
+        <BondzyMark size={22}/>
         <span style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:B.navy}}>Bondzy</span>
       </div>
       © 2026 ·{" "}<a href="https://www.bondzy.com" target="_blank" rel="noopener noreferrer" style={{color:B.gry,textDecoration:"none"}} onMouseOver={e=>e.currentTarget.style.color=B.navy} onMouseOut={e=>e.currentTarget.style.color=B.gry}>www.bondzy.com</a>{" "}· info@bondzy.com
@@ -517,7 +527,7 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
               htmlContent:isProm?`
                 <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                   <div style="background:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
-                    <img src="https://app.bondzy.com/bondzymarkv1.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:#D4A843;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
+                    <img src="https://app.bondzy.com/bondzymarkv2.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:#D4A843;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
                   </div>
                   <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
                     <h2 style="color:#1B2A4A;margin:0 0 8px;">Hi ${f.recipientName}! 👋</h2>
@@ -541,7 +551,7 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
                 </div>`:`
                 <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;background:#ffffff;">
                   <div style="background:#1B2A4A;padding:16px 28px;text-align:center;border-radius:12px 12px 0 0;">
-                    <img src="https://app.bondzy.com/bondzymarkv1.png" alt="Bondzy" width="36" height="36" style="display:inline-block;vertical-align:middle;margin-right:8px;border:0;border-radius:6px;"/>
+                    <img src="https://app.bondzy.com/bondzymarkv2.png" alt="Bondzy" width="36" height="36" style="display:inline-block;vertical-align:middle;margin-right:8px;border:0;border-radius:6px;"/>
                     <span style="color:#D4A843;font-size:18px;font-weight:700;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
                   </div>
                   <div style="background:#1B2A4A;padding:36px 28px 44px;text-align:center;">
@@ -638,7 +648,7 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
               htmlContent:`
                 <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                   <div style="background:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
-                    <img src="https://app.bondzy.com/bondzymarkv1.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:#D4A843;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
+                    <img src="https://app.bondzy.com/bondzymarkv2.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:#D4A843;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
                   </div>
                   <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
                     <h2 style="color:#1B2A4A;margin:0 0 8px;">${isProm?"🤝 Promise Bondzy Posted!":"✅ Bondzy Posted Successfully!"}</h2>
@@ -871,7 +881,7 @@ const Detail = ({bz,onNav,onRedeem,role,isPublic=false}) => {
     <div style={{background:B.wh,borderRadius:14,border:`2px solid ${bz.status==="redeemed"?B.grn:bz.status==="forfeit"?B.red:B.navy}`,overflow:"hidden",animation:"slideUp 0.4s ease"}}>
       <div style={{background:bz.status==="redeemed"?B.grn:bz.status==="forfeit"?B.red:B.navy,padding:"22px 24px",color:"white",textAlign:"center"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:12}}>
-          <img src="/bondzymarkv1.png" alt="Bondzy" style={{height:36,width:36,objectFit:"contain",borderRadius:6,flexShrink:0}}/>
+          <BondzyMark size={32}/>
           <span style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:"white"}}>Bondzy</span>
         </div>
         <div style={{fontSize:11,fontWeight:800,letterSpacing:1.5,marginBottom:6,opacity:0.8}}>{isProm?"PROMISE BONDZY":"REWARD BONDZY"}</div>
@@ -1208,7 +1218,7 @@ export default function BondzyApp() {
                   htmlContent:`
                     <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                       <div style="background:#2E8B57;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
-                        <img src="https://app.bondzy.com/bondzymarkv1.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:white;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
+                        <img src="https://app.bondzy.com/bondzymarkv2.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:white;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
                       </div>
                       <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
                         <h2 style="color:#2E8B57;margin:0 0 8px;">Good news, ${redeemedBondzy.recipient_name}!</h2>
@@ -1248,7 +1258,7 @@ export default function BondzyApp() {
                 htmlContent:`
                   <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                     <div style="background:#2E8B57;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
-                      <img src="https://app.bondzy.com/bondzymarkv1.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:white;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
+                      <img src="https://app.bondzy.com/bondzymarkv2.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:white;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
                     </div>
                     <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
                       <h2 style="color:#2E8B57;margin:0 0 8px;">Success! ${redeemedBondzy.recipient_name} showed up!</h2>
