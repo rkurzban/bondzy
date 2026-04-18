@@ -539,28 +539,83 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
                     <p style="margin:8px 0 0;"><a href="https://www.bondzy.com" style="color:#1B2A4A;text-decoration:none;font-weight:600;">www.bondzy.com</a> · info@bondzy.com</p>
                   </div>
                 </div>`:`
-                <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
-                  <div style="background:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
-                    <img src="https://app.bondzy.com/bondzymarkv1.png" alt="Bondzy" width="44" height="44" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/><span style="color:#D4A843;font-size:22px;font-weight:bold;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
+                <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;background:#ffffff;">
+                  <div style="background:#1B2A4A;padding:16px 28px;text-align:center;border-radius:12px 12px 0 0;">
+                    <img src="https://app.bondzy.com/bondzymarkv1.png" alt="Bondzy" width="36" height="36" style="display:inline-block;vertical-align:middle;margin-right:8px;border:0;border-radius:6px;"/>
+                    <span style="color:#D4A843;font-size:18px;font-weight:700;vertical-align:middle;font-family:Arial,sans-serif;">Bondzy</span>
                   </div>
-                  <div style="background:#ffffff;padding:24px;border:1px solid #DDE1E6;">
-                    <h2 style="color:#1B2A4A;margin:0 0 8px;">Hi ${f.recipientName}! 👋</h2>
-                    <p style="color:#5A6570;font-size:15px;line-height:1.6;">Show up on time for your appointment to claim your reward.</p>
-                    <div style="background:#FFF8E7;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #D4A843;">
-                      <p style="margin:4px 0;font-size:14px;">📍 <strong>Go to:</strong> ${f.locationName}${f.locationAddress ? ', ' + f.locationAddress : ''}</p>
-                      <p style="margin:4px 0;font-size:14px;">📅 <strong>When:</strong> ${formattedDate} at ${formattedTime}</p>
-                      <p style="margin:4px 0;font-size:14px;">⏰ <strong>Grace period:</strong> 10 minutes</p>
-                      <p style="margin:4px 0;font-size:14px;">🎁 <strong>Reward:</strong> ${f.rewardDescription.trim()||'Bondzy Reward'}</p>
+                  <div style="background:#1B2A4A;padding:36px 28px 44px;text-align:center;">
+                    <div style="display:inline-block;background:#ffffff;border-radius:50%;width:60px;height:60px;font-size:28px;line-height:60px;text-align:center;margin-bottom:18px;">🎁</div>
+                    <h1 style="color:#ffffff;font-size:28px;margin:0 0 10px;font-weight:800;line-height:1.2;font-family:Arial,sans-serif;">You've got a reward<br/>waiting for you.</h1>
+                    <p style="color:#D4A843;font-size:15px;margin:0;font-weight:500;">${profile?.name||session.user.email.split("@")[0]} set one up just for you</p>
+                  </div>
+                  <div style="height:4px;background:#D4A843;"></div>
+                  <div style="padding:32px 28px;background:#ffffff;border:1px solid #E8ECF0;border-top:none;">
+                    <p style="font-size:19px;font-weight:700;color:#1B2A4A;margin:0 0 6px;font-family:Arial,sans-serif;">Hi ${f.recipientName}! 👋</p>
+                    <p style="color:#5A6570;font-size:15px;line-height:1.65;margin:0 0 28px;">Show up on time for your appointment to claim your reward.</p>
+                    <div style="background:#F8F9FA;border-radius:12px;border:1px solid #E8ECF0;overflow:hidden;margin-bottom:28px;">
+                      <div style="padding:14px 16px;border-bottom:1px solid #E8ECF0;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                          <tr>
+                            <td width="48" style="vertical-align:middle;padding-right:12px;">
+                              <div style="width:36px;height:36px;background:#1B2A4A;border-radius:8px;text-align:center;line-height:36px;font-size:18px;">📍</div>
+                            </td>
+                            <td style="vertical-align:middle;">
+                              <div style="font-size:10px;font-weight:700;color:#8E99A4;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">Go To</div>
+                              <div style="font-size:14px;font-weight:600;color:#1B2A4A;">${f.locationName}${f.locationAddress ? ', ' + f.locationAddress : ''}</div>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+                      <div style="padding:14px 16px;border-bottom:1px solid #E8ECF0;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                          <tr>
+                            <td width="48" style="vertical-align:middle;padding-right:12px;">
+                              <div style="width:36px;height:36px;background:#1B2A4A;border-radius:8px;text-align:center;line-height:36px;font-size:18px;">📅</div>
+                            </td>
+                            <td style="vertical-align:middle;">
+                              <div style="font-size:10px;font-weight:700;color:#8E99A4;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">When</div>
+                              <div style="font-size:14px;font-weight:600;color:#1B2A4A;">${formattedDate} at ${formattedTime}</div>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+                      <div style="padding:14px 16px;border-bottom:1px solid #E8ECF0;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                          <tr>
+                            <td width="48" style="vertical-align:middle;padding-right:12px;">
+                              <div style="width:36px;height:36px;background:#1B2A4A;border-radius:8px;text-align:center;line-height:36px;font-size:18px;">⏰</div>
+                            </td>
+                            <td style="vertical-align:middle;">
+                              <div style="font-size:10px;font-weight:700;color:#8E99A4;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">Grace Period</div>
+                              <div style="font-size:14px;font-weight:600;color:#1B2A4A;">10 minutes</div>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+                      <div style="padding:14px 16px;background:#FFFBEF;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                          <tr>
+                            <td width="48" style="vertical-align:middle;padding-right:12px;">
+                              <div style="width:36px;height:36px;background:#D4A843;border-radius:8px;text-align:center;line-height:36px;font-size:18px;">🎁</div>
+                            </td>
+                            <td style="vertical-align:middle;">
+                              <div style="font-size:10px;font-weight:700;color:#B8892A;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">Your Reward</div>
+                              <div style="font-size:15px;font-weight:700;color:#1B2A4A;">${f.rewardDescription.trim()||'Bondzy Reward'}</div>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
                     </div>
-                    <p style="color:#5A6570;font-size:14px;line-height:1.6;">Click the button below when you are at ${f.locationName} to claim your reward!</p>
-                    <div style="text-align:center;margin:20px 0;">
-                      <a href="https://app.bondzy.com?bondzy=${data.id}" style="background:#D4A843;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">My Bondzy</a>
+                    <p style="color:#5A6570;font-size:14px;line-height:1.6;margin:0 0 24px;text-align:center;">Open the app when you're at ${f.locationName} and verify your location to unlock your reward.</p>
+                    <div style="text-align:center;">
+                      <a href="https://app.bondzy.com?bondzy=${data.id}" style="display:inline-block;background:#D4A843;color:#1B2A4A;padding:15px 44px;border-radius:10px;text-decoration:none;font-weight:800;font-size:16px;letter-spacing:0.3px;font-family:Arial,sans-serif;">Claim My Reward →</a>
                     </div>
                   </div>
-                  <div style="background:#F5F6F8;padding:20px 16px;text-align:center;color:#5A6570;font-size:12px;border-radius:0 0 12px 12px;">
-                    <p style="margin:0 0 8px;font-weight:600;">Bondzy—Make Things Happen!</p>
-                    <p style="margin:0;line-height:1.5;">Bondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.</p>
-                    <p style="margin:8px 0 0;"><a href="https://www.bondzy.com" style="color:#1B2A4A;text-decoration:none;font-weight:600;">www.bondzy.com</a> · info@bondzy.com</p>
+                  <div style="background:#F5F6F8;padding:24px 28px;text-align:center;color:#8E99A4;font-size:12px;border-radius:0 0 12px 12px;border:1px solid #E8ECF0;border-top:none;">
+                    <p style="margin:0 0 4px;font-weight:700;color:#5A6570;font-size:13px;">Bondzy — No More Hoping. Make Things Happen.</p>
+                    <p style="margin:0 0 10px;line-height:1.5;">GPS-verified accountability for real-world commitments.</p>
+                    <p style="margin:0;"><a href="https://www.bondzy.com" style="color:#1B2A4A;text-decoration:none;font-weight:700;">www.bondzy.com</a> · <a href="mailto:info@bondzy.com" style="color:#8E99A4;text-decoration:none;">info@bondzy.com</a></p>
                   </div>
                 </div>`,
             },
