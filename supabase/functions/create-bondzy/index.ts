@@ -197,7 +197,7 @@ Deno.serve(async (req: Request) => {
                   <div style="background:#FFF8E7;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #D4A843;">
                     <p style="margin:4px 0;font-size:14px;">📍 <strong>Go to:</strong> ${locationName}</p>
                     <p style="margin:4px 0;font-size:14px;">📅 <strong>When:</strong> ${formattedDate} at ${formattedTime}</p>
-                    <p style="margin:4px 0;font-size:14px;">⏰ <strong>Grace:</strong> ${graceMinutes} minutes</p>
+                    <p style="margin:4px 0;font-size:14px;">⏰ <strong>Grace period:</strong> ${graceMinutes} minutes</p>
                     <p style="margin:4px 0;font-size:14px;">🎁 <strong>Reward:</strong> ${rewardDescription}</p>
                   </div>
                   <p style="color:#5A6570;font-size:14px;line-height:1.6;">Open Bondzy at the right place and time, verify your GPS, and the treasure is yours!</p>
