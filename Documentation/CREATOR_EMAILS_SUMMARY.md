@@ -1,8 +1,33 @@
-# Creator Confirmation Emails - Feature Summary
+# Email Templates - Feature Summary
 
-## What We Added ✅
+## Current State ✅
 
-Two new emails that creators receive:
+All emails use the Bondzy logo mark + wordmark in the header. The Reward Bondzy recipient email uses a full-brand HTML template (see design details below). All other emails use a consistent navy header / white body / gray footer structure.
+
+---
+
+## Reward Bondzy Recipient Email — Redesigned Template
+
+**When:** Immediately after a Reward Bondzy is created  
+**To:** Recipient  
+**Subject:** 🎁 [Creator] has a Reward Bondzy for you!
+
+**Design:**
+- Navy header bar with logo mark + "Bondzy" wordmark
+- Full-height navy hero with white gift circle 🎁, bold headline "You've got a reward waiting for you.", creator name in gold
+- 4px gold accent bar dividing hero from body
+- Structured detail rows (table-based layout): Go To / When / Grace Period / Your Reward
+- Reward row highlighted in warm gold (#FFFBEF) with gold icon box
+- CTA: "Claim My Reward →" (dark text on gold, wide padding)
+- Footer: "Bondzy — No More Hoping. Make Things Happen." / GPS-verified tagline
+
+**Copy:** "Show up on time for your appointment to claim your reward."
+
+---
+
+## Creator Confirmation Emails ✅
+
+Two emails that creators receive:
 
 ---
 
@@ -140,4 +165,7 @@ Then move on to:
 
 ---
 
-**Status:** Ready to test! 🚀
+---
+
+**Last Updated:** April 18, 2026  
+**Status:** Live in production ✅

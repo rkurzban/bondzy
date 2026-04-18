@@ -118,6 +118,9 @@ bondzies table:
 - Creator confirmation email on creation
 - Creator notified when recipient claims (reward) or checks in (promise)
 - Recipient notified when creator keeps their promise
+- **Reward Bondzy recipient email** uses a full-brand HTML template: navy hero with white gift circle, gold accent bar, structured detail rows (table-based for email compatibility), warm gold reward row highlight, and "Claim My Reward →" CTA
+- All email headers include the Bondzy logo mark + wordmark
+- Consistent copy: "Show up on time for your appointment to claim your reward."
 
 ### ✅ Promise Bondzies
 - Creator commits to a location/time with a stated penalty
@@ -202,7 +205,8 @@ bondzies table:
 - Auth stability fixes (tab-switch, token refresh)
 - Location display deduplication
 
-### Phase 3: Growth (Next)
+### Phase 3: Growth (In Progress)
+- ✅ Branding & email design — logo on all email headers and Bondzy detail view; richer Reward Bondzy recipient template; consistent copy
 - Analytics dashboard (redemption rate, forfeit rate, creator retention)
 - Mobile PWA (add-to-home-screen, push notifications)
 - Social sharing ("I just claimed a Bondzy!")
@@ -226,5 +230,5 @@ Repository: github.com/rkurzban/bondzy
 
 ---
 
-**Last Updated:** April 16, 2026
-**Version:** 2.0 (Post-MVP, live)
+**Last Updated:** April 18, 2026
+**Version:** 2.1 (Post-MVP, live)
