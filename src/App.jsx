@@ -98,6 +98,7 @@ const creatorN=bz=>bz.creator_name||bz.creator?.name||(bz.creator_email||"").spl
 const getDist=(a,b,c,d)=>{const R=6371000,dL=((c-a)*Math.PI)/180,dN=((d-b)*Math.PI)/180;const x=Math.sin(dL/2)**2+Math.cos((a*Math.PI)/180)*Math.cos((c*Math.PI)/180)*Math.sin(dN/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));};
 const isExpiredClient=(b)=>{if(b.status!=="active"||!b.date||!b.time)return false;const end=new Date(`${b.date}T${b.time}`).getTime()+(b.grace_minutes||10)*60000;return Date.now()>end;};
 const isURL=s=>/^https?:\/\//i.test(s||"");
+const BONDZY_SELECT="id,type,status,creator_id,creator_email,creator_name,recipient_email,recipient_id,recipient_name,location_name,location_address,location_lat,location_lng,date,time,grace_minutes,timezone,reward_description,reward_link,created_at,redeemed_at,creator:profiles!creator_id(email,name)";
 
 // ========== LOGO MARK ==========
 const BondzyMark = ({size=26}) => (
@@ -509,7 +510,7 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
       date:f.date,time:f.time,grace_minutes:10,
       timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC",
       reward_link:f.rewardValue,reward_description:f.rewardDescription.trim()||(isProm?"Bondzy Penalty":"Bondzy Reward"),
-    }).select().single();
+    }).select(BONDZY_SELECT).single();
     setSaving(false);
     if(error){setErr({submit:error.message});}
     else{
@@ -761,6 +762,8 @@ const Detail = ({bz,onNav,onRedeem,role,isPublic=false}) => {
   const [redeeming,setRedeeming]=useState(false);
   const [now,setNow]=useState(new Date());
   const [gpsChecked,setGpsChecked]=useState(false);
+  const [pos,setPos]=useState(null);
+  const [redeemErr,setRedeemErr]=useState("");
   const isR=role==="recipient";
   const isProm=bz.type==="promise";
   const isGPSUser=isProm?!isR:isR; // Promise: creator checks GPS. Reward: recipient checks GPS.
@@ -853,20 +856,39 @@ const Detail = ({bz,onNav,onRedeem,role,isPublic=false}) => {
     navigator.geolocation.getCurrentPosition(
       pos=>{
         const dd=getDist(pos.coords.latitude,pos.coords.longitude,bz.location_lat,bz.location_lng);
+        setPos({lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy});
         setD(Math.round(dd));
         setAcc(Math.round(pos.coords.accuracy));
         setGps(dd<=100?"success":"far");
       },
-      e=>{setGps(e.code===1?"denied":"error");},
+      e=>{setPos(null);setGps(e.code===1?"denied":"error");},
       {enableHighAccuracy:true,timeout:15000,maximumAge:0}
     );
   };
 
   const doR=async()=>{
     setRedeeming(true);
-    await onRedeem(bz.id);
-    setRedeeming(false);
-    setConf(true);
+    setRedeemErr("");
+    try{
+      await onRedeem(bz.id,pos);
+      setConf(true);
+    }catch(e){
+      setRedeemErr(e?.message||"Redemption failed");
+    }finally{
+      setRedeeming(false);
+    }
+  };
+
+  const revealReward=async()=>{
+    setRedeeming(true);
+    setRedeemErr("");
+    try{
+      await onRedeem(bz.id);
+    }catch(e){
+      setRedeemErr(e?.message||"Could not reveal reward");
+    }finally{
+      setRedeeming(false);
+    }
   };
 
   return <div style={{maxWidth:580,margin:"0 auto",padding:"28px 20px 80px"}}>
@@ -934,12 +956,15 @@ const Detail = ({bz,onNav,onRedeem,role,isPublic=false}) => {
             {/* Reward code body */}
             <div style={{background:B.grnL,padding:"16px",textAlign:"center"}}>
               <div style={{fontSize:11,fontWeight:800,color:B.grn,letterSpacing:1,marginBottom:10,textTransform:"uppercase"}}>Your Reward</div>
-              {isURL(bz.reward_link)
+              {!bz.reward_link
+                ?<button className="btn bgr" onClick={revealReward} disabled={redeeming} style={{width:"100%",marginBottom:10}}>{redeeming?"Revealing...":"Reveal Reward"}</button>
+                :isURL(bz.reward_link)
                 ?<a href={bz.reward_link} target="_blank" rel="noopener noreferrer" className="btn bgr" style={{width:"100%",marginBottom:10,wordBreak:"break-all",fontSize:14}}>{bz.reward_link}</a>
                 :<div style={{background:B.wh,border:`2px solid ${B.grn}`,borderRadius:8,padding:"14px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
                   <span style={{fontFamily:"monospace",fontWeight:800,fontSize:22,color:B.grn,letterSpacing:2,wordBreak:"break-all"}}>{bz.reward_link}</span>
                   <button className="btn bo" style={{fontSize:12,padding:"4px 10px",flexShrink:0}} onClick={()=>{navigator.clipboard?.writeText(bz.reward_link);setCopR(true);setTimeout(()=>setCopR(false),2000);}}><Ic name="copy" size={13}/>{copR?" Copied!":" Copy"}</button>
                 </div>}
+              {redeemErr&&<div style={{fontSize:12,color:B.red,marginBottom:8}}>{redeemErr}</div>}
               {bz.redeemed_at&&<div style={{fontSize:11,color:B.gryD,marginBottom:4}}>📍 {bz.location_name} · {new Date(bz.redeemed_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</div>}
               <div style={{fontSize:10,color:B.gry,marginTop:6}}>The gradient above animates continuously — a screenshot is static.</div>
             </div>
@@ -1032,6 +1057,7 @@ const Detail = ({bz,onNav,onRedeem,role,isPublic=false}) => {
               <button className="btn bgr" onClick={doR} disabled={redeeming} style={{width:"100%",fontSize:18,padding:"18px 24px",fontWeight:800,animation:"pulse 1.5s infinite",boxShadow:`0 4px 20px ${B.grn}40`,background:`linear-gradient(135deg, ${B.grn} 0%, ${B.grnL} 100%)`,border:"none"}}>
                 {redeeming?"Redeeming...":(isProm?"✅ CHECK IN — KEEP YOUR PROMISE!":"🎁 CLAIM YOUR REWARD!")}
               </button>
+              {redeemErr&&<div style={{fontSize:12,color:B.red,marginTop:10,textAlign:"center"}}>{redeemErr}</div>}
             </div>}
             
             {/* GPS TOO FAR - Show distance and retry */}
@@ -1092,7 +1118,7 @@ export default function BondzyApp() {
   };
 
   const loadPublicRewardBondzy=async(id)=>{
-    const{data}=await supabase.from("bondzies").select("*, creator:profiles!creator_id(email,name)").eq("id",id).eq("type","reward").single();
+    const{data}=await supabase.from("bondzies").select(BONDZY_SELECT).eq("id",id).eq("type","reward").single();
     if(data){
       setSel(data);setRole("recipient");setPg("public-detail");
       window.history.replaceState(null,"",window.location.origin);
@@ -1134,7 +1160,7 @@ export default function BondzyApp() {
     if(!session)return;
     const load=async()=>{
       setBzLoad(true);
-      const{data}=await supabase.from("bondzies").select("*, creator:profiles!creator_id(email,name)").order("created_at",{ascending:false});
+      const{data}=await supabase.from("bondzies").select(BONDZY_SELECT).order("created_at",{ascending:false});
       setBondzies((data||[]).map(b=>({...b,creator_email:b.creator_email||b.creator?.email||""})));
       setBzLoad(false);
     };
@@ -1189,18 +1215,25 @@ export default function BondzyApp() {
     }
   };
 
-  const handleRedeem=async(id)=>{
-    const now=new Date().toISOString();
-    const{error}=await supabase.from("bondzies").update({status:"redeemed",redeemed_at:now}).eq("id",id);
-    if(!error){
-      const redeemedBondzy=bondzies.find(b=>b.id===id)||sel;
-      setBondzies(prev=>prev.map(b=>b.id===id?{...b,status:"redeemed",redeemed_at:now}:b));
-      setSel(prev=>prev?{...prev,status:"redeemed",redeemed_at:now}:prev);
+  const handleRedeem=async(id,gps={})=>{
+    const body={bondzy_id:id};
+    if(gps?.lat!=null&&gps?.lng!=null){
+      body.lat=gps.lat;body.lng=gps.lng;body.accuracy=gps.accuracy;
+    }
+    const{data,error}=await supabase.functions.invoke("redeem-bondzy",{body});
+    if(error)throw new Error(error.message||"Redemption failed");
+    if(data?.error)throw new Error(data.error);
+
+    const now=data?.bondzy?.redeemed_at||new Date().toISOString();
+    const mergeRedeemed=b=>({...b,...(data?.bondzy||{}),status:"redeemed",redeemed_at:now,...(data?.reward_value?{reward_link:data.reward_value}:{})});
+    const redeemedBondzy=mergeRedeemed(bondzies.find(b=>b.id===id)||sel||{id});
+    setBondzies(prev=>prev.map(b=>b.id===id?mergeRedeemed(b):b));
+    setSel(prev=>prev&&prev.id===id?mergeRedeemed(prev):prev);
       const isProm=redeemedBondzy?.type==="promise";
-      tt(isProm?"✅ Promise kept!":"🎉 Reward unlocked!");
+      tt(data?.already_redeemed?"Reward revealed":isProm?"✅ Promise kept!":"🎉 Reward unlocked!");
       
       // Send notification email
-      if(redeemedBondzy){
+      if(redeemedBondzy&&!data?.already_redeemed){
         try{
           if(isProm){
             // PROMISE: Creator checked in → notify recipient that promise was kept
@@ -1287,7 +1320,6 @@ export default function BondzyApp() {
           }
         }catch(emailErr){console.log("Redemption notification failed:",emailErr);}
       }
-    }
   };
 
   const handleLogout=async()=>{await supabase.auth.signOut();nav("landing");};
