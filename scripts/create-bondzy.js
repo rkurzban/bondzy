@@ -21,7 +21,7 @@ const { createClient } = require("@supabase/supabase-js");
 // Set these in your shell before running, e.g.:
 //   export SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
 //   export SUPABASE_SERVICE_ROLE_KEY=eyJ...
-//   export BREVO_API_KEY=xkeysib-...
+//   export BREVO_API_KEY=<brevo-api-key>
 //   export CREATOR_EMAIL=you@example.com
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -132,6 +132,17 @@ async function insertBondzy(supabase, creatorId, creatorProfile) {
   return data;
 }
 
+async function getBondzyClaimToken(supabase, bondzyId) {
+  const { data, error } = await supabase
+    .from("bondzy_claims")
+    .select("claim_token")
+    .eq("bondzy_id", bondzyId)
+    .single();
+
+  if (error) throw new Error("Claim token lookup failed: " + error.message);
+  return data.claim_token;
+}
+
 async function sendEmail(to, toName, subject, htmlContent, textContent) {
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
@@ -162,6 +173,7 @@ function buildEmailHtml(bondzy, creatorName, isRecipient) {
   const hour12 = ((+h % 12) || 12);
   const ampm = +h >= 12 ? "PM" : "AM";
   const formattedTime = `${hour12}:${m} ${ampm}`;
+  const bondzyUrl = bondzy.bondzy_url || "https://app.bondzy.com";
 
   if (isProm && isRecipient) {
     return `
@@ -181,7 +193,7 @@ function buildEmailHtml(bondzy, creatorName, isRecipient) {
     </div>
     <p style="color:#5A6570;font-size:14px;">Click the button below to track this commitment — you'll receive the penalty automatically if they don't show up!</p>
     <div style="text-align:center;margin:20px 0;">
-      <a href="https://app.bondzy.com?bondzy=${bondzy.id}" style="background:#1B2A4A;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">My Bondzy</a>
+      <a href="${bondzyUrl}" style="background:#1B2A4A;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">My Bondzy</a>
     </div>
   </div>
   <div style="background:#F5F6F8;padding:16px;text-align:center;color:#5A6570;font-size:12px;border-radius:0 0 12px 12px;">
@@ -205,7 +217,7 @@ function buildEmailHtml(bondzy, creatorName, isRecipient) {
       <p style="margin:4px 0;font-size:14px;">${isProm ? "🎁" : "🎁"} <strong>${isProm ? "Penalty:" : "Reward:"}</strong> ${bondzy.reward_description}</p>
     </div>
     <div style="text-align:center;margin:20px 0;">
-      <a href="https://app.bondzy.com?bondzy=${bondzy.id}" style="background:#D4A843;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">My Bondzy</a>
+      <a href="${bondzyUrl}" style="background:#D4A843;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">My Bondzy</a>
     </div>
   </div>
   <div style="background:#F5F6F8;padding:16px;text-align:center;color:#5A6570;font-size:12px;border-radius:0 0 12px 12px;">
@@ -228,7 +240,11 @@ async function main() {
 
   console.log("Creating Bondzy...");
   const bondzy = await insertBondzy(supabase, creatorId, creatorProfile);
+  const claimToken = await getBondzyClaimToken(supabase, bondzy.id);
+  bondzy.claim_token = claimToken;
+  bondzy.bondzy_url = claimToken ? `https://app.bondzy.com?claim=${claimToken}` : "https://app.bondzy.com";
   console.log(`Bondzy created! ID: ${bondzy.id}`);
+  console.log(`  Link:      ${bondzy.bondzy_url}`);
   console.log(`  Type:      ${bondzy.type}`);
   console.log(`  Recipient: ${bondzy.recipient_name} (${bondzy.recipient_email})`);
   console.log(`  Location:  ${bondzy.location_name}`);

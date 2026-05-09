@@ -1,7 +1,7 @@
 # Bondzy Development Guide
 ## Where We Are and What's Next
 
-*Last updated: February 20, 2026*
+*Last updated: May 8, 2026*
 
 ---
 
@@ -14,7 +14,7 @@
 | Google SSO | "Continue with Google" on the sign-in page |
 | Google Places | Real Places Autocomplete API — any location worldwide |
 | SMTP | Brevo connected to Supabase for auth emails (info@bondzy.com) |
-| Email notifications | Brevo API called from the app on Bondzy creation and redemption |
+| Email notifications | App invokes Supabase Edge Functions; Brevo sends from server-side secrets |
 | Creator confirmation email | Sent to creator when a Bondzy is created |
 | Recipient redemption email | Sent to recipient when they successfully redeem |
 | Creator redemption notification | Sent to creator when recipient redeems |
@@ -22,6 +22,8 @@
 | Promise Bondzies | Full create → share → GPS verify → fulfill flow (creator verifies their own location) |
 | Auto-GPS & one-click redemption | Location check happens automatically; single tap to redeem |
 | URL sharing / Copy Link | Each Bondzy has a shareable link; recipients don't need an account to view |
+| Brevo API key security | Brevo key rotated and stored as the Supabase `BREVO_API_KEY` Edge Function secret |
+| Claim token links | Shared links use private `?claim=` tokens instead of public database ids |
 | app.bondzy.com | App now lives at app.bondzy.com, separate from the www.bondzy.com marketing site |
 | www.bondzy.com footer link | Small tasteful link to the marketing site in the app footer |
 
@@ -92,16 +94,15 @@ select * from cron.job;
 | Reward link shortcuts | Pre-fill buttons for PayPal, Venmo, Amazon Gift Card |
 | Auto-populate recipient | If recipient email matches existing user, pre-fill their name |
 | Onboarding | First-time user tour or example Bondzy |
-| Brevo API key security | `VITE_BREVO_API_KEY` is browser-exposed. Fine for beta; move to a Supabase Edge Function before scaling |
 
 ---
 
-### 4. Brevo API Key Security 🔒
-**Status:** The Brevo API key (`VITE_BREVO_API_KEY`) is a Vite environment variable, which means it's bundled into the client-side JavaScript and visible to anyone who inspects the page source. This is acceptable for beta.
+### 4. Email Function Hardening 🔒
+**Status:** Fixed for key exposure. The old Brevo key was revoked, a new key was stored as the Supabase `BREVO_API_KEY` Edge Function secret, and the active app no longer uses a browser-exposed Brevo Vite variable.
 
-**When to fix it:** Once you have real volume or the key has meaningful sending limits you want to protect.
+**Remaining risk:** `send-email` currently forwards the payload the app sends to Brevo. The Brevo key is protected, but before scale this function should become template-driven so callers can only trigger approved Bondzy email types.
 
-**How to fix it:** Move the Brevo calls into a Supabase Edge Function (same approach as the original Phase 3 design in the previous version of this doc). The React app calls the Edge Function; the Edge Function holds the secret key server-side.
+**Recommended next step:** Have the app call `send-email` with a template name and Bondzy id. The Edge Function should load the Bondzy, build the recipient/sender/subject/body server-side, and reject unsupported email types.
 
 ---
 
@@ -122,14 +123,20 @@ select * from cron.job;
 
 ### Environment Variables
 
-Set in `.env.local` (local dev) and in Vercel (production):
+Set Vite variables in `.env.local` for local dev and in Vercel for production. Only variables prefixed with `VITE_` belong here, because they are visible in browser JavaScript.
 
 | Variable | Where to find it |
 |----------|-----------------|
 | `VITE_SUPABASE_URL` | Supabase → Settings → API |
 | `VITE_SUPABASE_ANON_KEY` | Supabase → Settings → API Keys |
 | `VITE_GOOGLE_PLACES_KEY` | Google Cloud → Credentials |
-| `VITE_BREVO_API_KEY` | Brevo → Settings → SMTP & API → API keys tab |
+
+Set server-only secrets in Supabase Edge Function secrets, not in Vercel and not with a `VITE_` prefix:
+
+| Secret | Where to find it |
+|----------|-----------------|
+| `BREVO_API_KEY` | Brevo → Settings → SMTP & API → API keys tab |
+| `BONDZY_API_KEY` | Internal shared secret for the `create-bondzy` API |
 
 ### Deploy Workflow
 
@@ -161,6 +168,11 @@ Vercel auto-deploys within ~60 seconds. Test locally first with `npm run dev`.
 - `date`, `time`, `grace_minutes` (default 10)
 - `reward_link`, `reward_description`
 - `created_at`, `redeemed_at` (nullable)
+
+**bondzy_claims** table:
+- `bondzy_id` (uuid, references `bondzies.id`)
+- `claim_token` (uuid, unique private shared-link token)
+- `created_at` (timestamp)
 
 ---
 

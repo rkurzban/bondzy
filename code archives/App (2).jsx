@@ -329,7 +329,7 @@ const Create = ({onNav,userId,onCreate}) => {
     else{
       // Send notification email to recipient via Brevo
       try{
-        const BREVO_KEY=import.meta.env.VITE_BREVO_API_KEY;
+        const BREVO_KEY=null /* archived snapshot: production uses Supabase Edge Function secret */;
         if(BREVO_KEY){
           const formattedDate=fmtD(f.date);
           const formattedTime=fmtT(f.time);

@@ -99,6 +99,13 @@ const getDist=(a,b,c,d)=>{const R=6371000,dL=((c-a)*Math.PI)/180,dN=((d-b)*Math.
 const isExpiredClient=(b)=>{if(b.status!=="active"||!b.date||!b.time)return false;const end=new Date(`${b.date}T${b.time}`).getTime()+(b.grace_minutes||10)*60000;return Date.now()>end;};
 const isURL=s=>/^https?:\/\//i.test(s||"");
 const BONDZY_SELECT="id,type,status,creator_id,creator_email,creator_name,recipient_email,recipient_id,recipient_name,location_name,location_address,location_lat,location_lng,date,time,grace_minutes,timezone,reward_description,reward_link,created_at,redeemed_at,creator:profiles!creator_id(email,name)";
+const APP_URL="https://app.bondzy.com";
+const claimLink=(token,origin=APP_URL)=>`${origin}?claim=${encodeURIComponent(token)}`;
+const getClaimToken=async(bondzyId)=>{
+  const{data,error}=await supabase.rpc("get_bondzy_claim_token",{p_bondzy_id:bondzyId});
+  if(error){console.error("Claim token lookup failed:",error);return null;}
+  return data||null;
+};
 
 // ========== LOGO MARK ==========
 const BondzyMark = ({size=26}) => (
@@ -514,6 +521,9 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
     setSaving(false);
     if(error){setErr({submit:error.message});}
     else{
+      const claimToken=await getClaimToken(data.id);
+      const bondzyUrl=claimToken?claimLink(claimToken):APP_URL;
+      const createdBondzy={...data,claim_token:claimToken};
       // Send notification email to recipient via Brevo
       try{
         {
@@ -524,7 +534,7 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
               sender:{name:'Bondzy',email:'info@bondzy.com'},
               to:[{email:f.recipientEmail,name:f.recipientName}],
               subject:isProm?`🤝 ${profile?.name||session.user.email.split("@")[0]} made you a Promise Bondzy!`:`🎁 ${profile?.name||session.user.email.split("@")[0]} has a Reward Bondzy for you!`,
-              textContent:isProm?`Hi ${f.recipientName}!\n\n${profile?.name||session.user.email.split("@")[0]} made a Promise Bondzy to you — they're committing to be somewhere at a specific time. If they don't show up, you get the penalty!\n\nWho: ${profile?.name||session.user.email}\nWhere: ${f.locationName}${f.locationAddress ? ', ' + f.locationAddress : ''}\nWhen: ${formattedDate} at ${formattedTime}\nPenalty if no-show: ${f.rewardDescription.trim()||'Bondzy Penalty'}\n\nClick the button below to track this commitment — you'll receive the penalty automatically if they don't show up!\n\nMy Bondzy: https://app.bondzy.com?bondzy=${data.id}\n\n---\nBondzy—Make Things Happen!\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`:`Hi ${f.recipientName}!\n\nShow up on time for your appointment to claim your reward.\n\nGo to: ${f.locationName}${f.locationAddress ? ', ' + f.locationAddress : ''}\nWhen: ${formattedDate} at ${formattedTime}\nGrace period: 10 minutes\nReward: ${f.rewardDescription.trim()||'Bondzy Reward'}\n\nClick the button below when you are at ${f.locationName} to claim your reward!\n\nMy Bondzy: https://app.bondzy.com?bondzy=${data.id}\n\n---\nBondzy—Make Things Happen!\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`,
+              textContent:isProm?`Hi ${f.recipientName}!\n\n${profile?.name||session.user.email.split("@")[0]} made a Promise Bondzy to you — they're committing to be somewhere at a specific time. If they don't show up, you get the penalty!\n\nWho: ${profile?.name||session.user.email}\nWhere: ${f.locationName}${f.locationAddress ? ', ' + f.locationAddress : ''}\nWhen: ${formattedDate} at ${formattedTime}\nPenalty if no-show: ${f.rewardDescription.trim()||'Bondzy Penalty'}\n\nClick the button below to track this commitment — you'll receive the penalty automatically if they don't show up!\n\nMy Bondzy: ${bondzyUrl}\n\n---\nBondzy—Make Things Happen!\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`:`Hi ${f.recipientName}!\n\nShow up on time for your appointment to claim your reward.\n\nGo to: ${f.locationName}${f.locationAddress ? ', ' + f.locationAddress : ''}\nWhen: ${formattedDate} at ${formattedTime}\nGrace period: 10 minutes\nReward: ${f.rewardDescription.trim()||'Bondzy Reward'}\n\nClick the button below when you are at ${f.locationName} to claim your reward!\n\nMy Bondzy: ${bondzyUrl}\n\n---\nBondzy—Make Things Happen!\nBondzy uses GPS verification to turn promises and rewards into real-world action. Whether someone is motivating you to show up or backing their word with a commitment, Bondzy makes it count.\nhttps://www.bondzy.com | info@bondzy.com`,
               htmlContent:isProm?`
                 <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
                   <div style="background:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
@@ -541,7 +551,7 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
                     </div>
                     <p style="color:#5A6570;font-size:14px;line-height:1.6;">Click the button below to track this commitment — you'll receive the penalty automatically if they don't show up!</p>
                     <div style="text-align:center;margin:20px 0;">
-                      <a href="https://app.bondzy.com?bondzy=${data.id}" style="background:#D4A843;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">My Bondzy</a>
+                      <a href="${bondzyUrl}" style="background:#D4A843;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">My Bondzy</a>
                     </div>
                   </div>
                   <div style="background:#F5F6F8;padding:20px 16px;text-align:center;color:#5A6570;font-size:12px;border-radius:0 0 12px 12px;">
@@ -620,7 +630,7 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
                     </div>
                     <p style="color:#5A6570;font-size:14px;line-height:1.6;margin:0 0 24px;text-align:center;">Open the app when you're at ${f.locationName} and verify your location to unlock your reward.</p>
                     <div style="text-align:center;">
-                      <a href="https://app.bondzy.com?bondzy=${data.id}" style="display:inline-block;background:#D4A843;color:#1B2A4A;padding:15px 44px;border-radius:10px;text-decoration:none;font-weight:800;font-size:16px;letter-spacing:0.3px;font-family:Arial,sans-serif;">Claim My Reward →</a>
+                      <a href="${bondzyUrl}" style="display:inline-block;background:#D4A843;color:#1B2A4A;padding:15px 44px;border-radius:10px;text-decoration:none;font-weight:800;font-size:16px;letter-spacing:0.3px;font-family:Arial,sans-serif;">Claim My Reward →</a>
                     </div>
                   </div>
                   <div style="background:#F5F6F8;padding:24px 28px;text-align:center;color:#8E99A4;font-size:12px;border-radius:0 0 12px 12px;border:1px solid #E8ECF0;border-top:none;">
@@ -678,7 +688,7 @@ const Create = ({onNav,userId,onCreate,session,profile,createType="reward"}) => 
       }catch(emailErr){console.log("Creator confirmation email failed:",emailErr);}
       
       try{localStorage.removeItem(DRAFT_KEY);}catch{}
-      onCreate(data);
+      onCreate(createdBondzy);
     }
   };
 
@@ -764,6 +774,7 @@ const Detail = ({bz,onNav,onRedeem,role,isPublic=false}) => {
   const [gpsChecked,setGpsChecked]=useState(false);
   const [pos,setPos]=useState(null);
   const [redeemErr,setRedeemErr]=useState("");
+  const [shareErr,setShareErr]=useState("");
   const isR=role==="recipient";
   const isProm=bz.type==="promise";
   const isGPSUser=isProm?!isR:isR; // Promise: creator checks GPS. Reward: recipient checks GPS.
@@ -870,7 +881,7 @@ const Detail = ({bz,onNav,onRedeem,role,isPublic=false}) => {
     setRedeeming(true);
     setRedeemErr("");
     try{
-      await onRedeem(bz.id,pos);
+      await onRedeem(bz.id,pos,bz.claim_token);
       setConf(true);
     }catch(e){
       setRedeemErr(e?.message||"Redemption failed");
@@ -883,12 +894,25 @@ const Detail = ({bz,onNav,onRedeem,role,isPublic=false}) => {
     setRedeeming(true);
     setRedeemErr("");
     try{
-      await onRedeem(bz.id);
+      await onRedeem(bz.id,null,bz.claim_token);
     }catch(e){
       setRedeemErr(e?.message||"Could not reveal reward");
     }finally{
       setRedeeming(false);
     }
+  };
+
+  const copyShareLink=async()=>{
+    setShareErr("");
+    let token=bz.claim_token;
+    if(!token)token=await getClaimToken(bz.id);
+    if(!token){
+      setShareErr("Private claim link is not available yet.");
+      return;
+    }
+    navigator.clipboard?.writeText(claimLink(token,window.location.origin));
+    setCop(true);
+    setTimeout(()=>setCop(false),2000);
   };
 
   return <div style={{maxWidth:580,margin:"0 auto",padding:"28px 20px 80px"}}>
@@ -1081,15 +1105,11 @@ const Detail = ({bz,onNav,onRedeem,role,isPublic=false}) => {
 
         {/* COPY LINK BUTTON */}
         <div style={{marginTop:20,display:"flex",gap:8,justifyContent:"center"}}>
-          <button className="btn bo" style={{fontSize:13,padding:"8px 16px"}} onClick={()=>{
-            const shareUrl=`${window.location.origin}?bondzy=${bz.id}`;
-            navigator.clipboard?.writeText(shareUrl);
-            setCop(true);
-            setTimeout(()=>setCop(false),2000);
-          }}>
+          <button className="btn bo" style={{fontSize:13,padding:"8px 16px"}} onClick={copyShareLink}>
             <Ic name="copy" size={14}/> {cop?"Copied!":"Copy Link"}
           </button>
         </div>
+        {shareErr&&<div style={{fontSize:12,color:B.red,textAlign:"center",marginTop:8}}>{shareErr}</div>}
       </div>
     </div>
   </div>;
@@ -1117,26 +1137,31 @@ export default function BondzyApp() {
     setSel(null);window.scrollTo(0,0);
   };
 
-  const loadPublicRewardBondzy=async(id)=>{
-    const{data}=await supabase.from("bondzies").select(BONDZY_SELECT).eq("id",id).eq("type","reward").single();
-    if(data){
-      setSel(data);setRole("recipient");setPg("public-detail");
-      window.history.replaceState(null,"",window.location.origin);
-    }else{
+  const loadClaimBondzy=async(token)=>{
+    const{data,error}=await supabase.functions.invoke("claim-bondzy",{body:{claim_token:token}});
+    if(error||data?.error){
       setPg("landing");
+      if(!data?.requires_auth)window.history.replaceState(null,"",window.location.origin);
+      return;
     }
+    const claimed={...data.bondzy,claim_token:token};
+    setSel(claimed);setRole(data.role||"recipient");setPg(session?"detail":"public-detail");
+    window.history.replaceState(null,"",window.location.origin);
   };
 
   // Auth listener
   useEffect(()=>{
     const urlParams=new URLSearchParams(window.location.search);
+    const sharedClaimToken=urlParams.get('claim');
     const sharedBondzyId=urlParams.get('bondzy');
     supabase.auth.getSession().then(({data:{session:s}})=>{
       setSession(s);
       if(s){
-        setPg("dashboard"); // shared link handler takes over once bondzies load
+        setPg("dashboard"); // shared link handlers take over once auth/bondzies load
+      }else if(sharedClaimToken){
+        loadClaimBondzy(sharedClaimToken);
       }else if(sharedBondzyId){
-        loadPublicRewardBondzy(sharedBondzyId);
+        setPg("landing");
       }else{
         setPg("landing");
       }
@@ -1148,6 +1173,14 @@ export default function BondzyApp() {
     });
     return()=>subscription.unsubscribe();
   },[]);
+
+  // Handle claim-token links after sign-in.
+  useEffect(()=>{
+    if(!session)return;
+    const urlParams=new URLSearchParams(window.location.search);
+    const claimToken=urlParams.get('claim');
+    if(claimToken)loadClaimBondzy(claimToken);
+  },[session]);
 
   // Load profile
   useEffect(()=>{
@@ -1215,11 +1248,12 @@ export default function BondzyApp() {
     }
   };
 
-  const handleRedeem=async(id,gps={})=>{
+  const handleRedeem=async(id,gps={},claimToken=null)=>{
     const body={bondzy_id:id};
     if(gps?.lat!=null&&gps?.lng!=null){
       body.lat=gps.lat;body.lng=gps.lng;body.accuracy=gps.accuracy;
     }
+    if(claimToken)body.claim_token=claimToken;
     const{data,error}=await supabase.functions.invoke("redeem-bondzy",{body});
     if(error)throw new Error(error.message||"Redemption failed");
     if(data?.error)throw new Error(data.error);

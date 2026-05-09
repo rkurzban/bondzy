@@ -91,6 +91,7 @@ bondzies table:
 ### Security
 - Row Level Security (RLS) enabled on all tables
 - Environment variables for all API keys
+- Brevo API key stored as Supabase `BREVO_API_KEY` Edge Function secret, not bundled into browser code
 - HTTPS everywhere (Vercel + custom domain)
 
 ---
@@ -114,7 +115,7 @@ bondzies table:
 - Single click to redeem; reward link delivered immediately
 
 ### ✅ Email Notifications (via Brevo)
-- Recipient email on creation: deep link to their specific Bondzy at `app.bondzy.com?bondzy=<id>`
+- Recipient email on creation: private claim link to their specific Bondzy at `app.bondzy.com?claim=<token>`
 - Creator confirmation email on creation
 - Creator notified when recipient claims (reward) or checks in (promise)
 - Recipient notified when creator keeps their promise
@@ -159,7 +160,7 @@ bondzies table:
 7. Both creator and recipient receive email immediately
 
 ### Claiming a Bondzy (Recipient — Reward)
-1. Receive email with "Open Bondzy" button → lands on `app.bondzy.com?bondzy=<id>`
+1. Receive email with "Open Bondzy" button → lands on `app.bondzy.com?claim=<token>`
 2. See countdown if early, or "Active!" if window is open
 3. GPS auto-checks location when window opens
 4. If within 100m: "CLAIM YOUR REWARD!" button appears with confetti
@@ -175,7 +176,7 @@ bondzies table:
 ## Known Limitations / Tech Debt
 
 - App.jsx is a single ~1,250-line file (no component splitting yet)
-- Brevo API key is in client-side code (acceptable for current scale; should move to Edge Function before significant growth)
+- `send-email` Edge Function should become template-driven before scale instead of forwarding app-supplied email payloads
 - No TypeScript, no automated tests
 - No analytics / admin dashboard
 

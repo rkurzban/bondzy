@@ -93,7 +93,7 @@ Database Update (status = redeemed)
 ### Error Handling:
 - Both emails wrapped in try-catch blocks
 - Silent failures (logged to console, doesn't break app)
-- Brevo API key check before sending
+- Supabase Edge Function checks the server-side `BREVO_API_KEY` secret before sending
 
 ---
 

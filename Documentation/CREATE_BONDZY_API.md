@@ -16,9 +16,11 @@ The Edge Function (`supabase/functions/create-bondzy/index.ts`) does the followi
 2. Validates all required fields in the request body
 3. Looks up the creator's account in the `profiles` table by email
 4. Inserts a new row into the `bondzies` table using Supabase's service-role key
-5. Sends a notification email to the recipient via Brevo
-6. Sends a confirmation email to the creator via Brevo
-7. Returns the created Bondzy details as a JSON response
+5. For Reward Bondzies, requires a reward payload and inserts it as `reward_link`
+6. The Phase 1 reward-security trigger moves active Reward payloads into `bondzy_secrets` and clears `bondzies.reward_link`
+7. The Phase 2 claim-token trigger creates a private shared-link token in `bondzy_claims`
+8. Optionally sends notification emails via Brevo unless `send_email` is explicitly `false`
+9. Returns the created Bondzy details and a `bondzy_url` as a JSON response
 
 **Deployment steps taken:**
 - Installed the Supabase CLI on Windows via Scoop
@@ -69,8 +71,14 @@ Send a JSON object with the following fields:
 | `date` | string | Yes | Date in `YYYY-MM-DD` format (e.g. `"2026-04-10"`) |
 | `time` | string | Yes | Time in `HH:MM` 24-hour format (e.g. `"14:00"` for 2:00 PM) |
 | `reward_description` | string | Yes | Human-readable description of the reward (e.g. `"$5 off your next visit"`) |
-| `reward_link` | string | No | A URL or code for redeeming the reward (optional) |
+| `reward_link` | string | Yes for `reward` | The private reward payload revealed after redemption. Despite the name, this can be a URL, promo code, or plain text string. |
+| `reward_payload` | string | No | Alias for `reward_link`; supported for API callers, but prefer `reward_link` for now. |
+| `payload` | string | No | Alias for `reward_link`; supported for API callers, but prefer `reward_link` for now. |
+| `timezone` | string | No | IANA timezone for the appointment window. Defaults to `"America/New_York"`. |
 | `grace_minutes` | number | No | Minutes of grace period around the scheduled time. Defaults to `10`. |
+| `send_email` | boolean | No | Defaults to `true`. Set to `false` when the business sends its own email, such as The Pottery Spottery SendGrid flow. |
+
+For Reward Bondzies, `reward_link` is required because redemption now happens through the server-side `redeem-bondzy` function. The value is not intended to remain visible in `bondzies`; the database trigger stores it privately in `bondzy_secrets`.
 
 ### Example Request Body
 
@@ -86,8 +94,10 @@ Send a JSON object with the following fields:
   "location_lng": -74.0060,
   "date": "2026-04-10",
   "time": "14:00",
+  "timezone": "America/New_York",
   "reward_description": "$5 off your next visit",
-  "reward_link": "https://..."
+  "reward_link": "POTTERY5",
+  "send_email": false
 }
 ```
 
@@ -98,6 +108,7 @@ Send a JSON object with the following fields:
 ```json
 {
   "success": true,
+  "bondzy_url": "https://app.bondzy.com/?claim=private-claim-token",
   "bondzy": {
     "id": "uuid-of-new-bondzy",
     "type": "reward",
@@ -108,6 +119,7 @@ Send a JSON object with the following fields:
     "location_name": "The Pottery Spot",
     "date": "2026-04-10",
     "time": "14:00",
+    "timezone": "America/New_York",
     "reward_description": "$5 off your next visit",
     "created_at": "2026-04-10T12:00:00Z"
   }
@@ -119,7 +131,7 @@ Send a JSON object with the following fields:
 | Status | Meaning |
 |---|---|
 | `401` | Missing or wrong `x-api-key` |
-| `400` | Missing a required field, invalid `type` value, or `creator_email` not found in Bondzy |
+| `400` | Missing a required field, missing `reward_link` for a Reward Bondzy, invalid `type` value, or `creator_email` not found in Bondzy |
 | `500` | Database error on insert |
 
 ---
@@ -136,7 +148,7 @@ When calling this API from a studio automation script (e.g. Google Calendar), th
 | `location_lat` | The studio's latitude |
 | `location_lng` | The studio's longitude |
 
-The fields that vary per call are: `recipient_email`, `recipient_name`, `date`, `time`, `reward_description`.
+The fields that vary per call are: `recipient_email`, `recipient_name`, `date`, `time`, `reward_description`, and optionally `reward_link` if each appointment receives a different code.
 
 To find your studio's exact latitude and longitude, go to Google Maps, right-click on your studio's location, and the coordinates will appear at the top of the context menu. Click them to copy.
 
@@ -159,7 +171,10 @@ Invoke-RestMethod -Method POST `
     "location_lng": -74.0060,
     "date": "2026-04-10",
     "time": "14:00",
-    "reward_description": "$5 off your next visit"
+    "timezone": "America/New_York",
+    "reward_description": "$5 off your next visit",
+    "reward_link": "POTTERY5",
+    "send_email": false
   }'
 ```
 
@@ -181,7 +196,10 @@ function createBondzy(recipientEmail, recipientName, date, time, rewardDescripti
     location_lng: -74.0060,
     date: date,   // "YYYY-MM-DD"
     time: time,   // "HH:MM"
-    reward_description: rewardDescription
+    timezone: "America/New_York",
+    reward_description: rewardDescription,
+    reward_link: "POTTERY5",
+    send_email: false
   };
   var options = {
     method: "post",
@@ -193,6 +211,25 @@ function createBondzy(recipientEmail, recipientName, date, time, rewardDescripti
   Logger.log(response.getContentText());
 }
 ```
+
+### The Pottery Spottery Notes - May 8, 2026
+
+The Google Apps Script caller was updated to send:
+
+```javascript
+reward_description: REWARD_DESCRIPTION,
+reward_link: REWARD_LINK,
+timezone: 'America/New_York',
+send_email: false
+```
+
+`REWARD_LINK` can be plain text for now, such as:
+
+```javascript
+var REWARD_LINK = 'You got the reward!';
+```
+
+This is intentionally stored privately in `bondzy_secrets.reward_value` and revealed only after successful redemption. The current field name is historical; future cleanup can rename the API-facing concept to `reward_payload` or `reward_value`.
 
 ---
 
@@ -208,4 +245,10 @@ supabase functions deploy create-bondzy --no-verify-jwt
 
 ---
 
-*Documentation created April 3, 2026.*
+## Known Follow-Up
+
+Promise Bondzies still deserve a separate review. Phase 1 focused on Reward Bondzies. Promise penalties use a different reveal path, so they should be tightened deliberately instead of mixed into the Reward API change.
+
+---
+
+*Documentation created April 3, 2026. Updated May 9, 2026 for Phase 2 claim-token links.*

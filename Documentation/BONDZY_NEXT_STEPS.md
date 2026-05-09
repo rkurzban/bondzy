@@ -9,10 +9,11 @@
 - **Auto-forfeit cron job** — Supabase pg_cron runs every 5 minutes
 - **Creator emails** — confirmation on creation + notification on redemption/check-in
 - **Custom domain** — live at app.bondzy.com
-- **Email deep links** — "Open Bondzy" goes to `app.bondzy.com?bondzy=<id>`, not homepage
+- **Email deep links** — "Open Bondzy" goes to `app.bondzy.com?claim=<token>`, not homepage
 - **Programmatic creation** — `scripts/create-bondzy.js` for creating Bondzies via CLI
 - **Auth stability** — tab-switch and token refresh no longer kick users off the create screen
 - **Location display** — deduplicated when address starts with location name
+- **Phase 2 claim tokens** — shared links now use private `?claim=` tokens instead of public database ids
 
 ---
 
@@ -95,7 +96,7 @@
 ## Technical Debt (Address Before Scale)
 
 - **Split App.jsx** into separate component files (currently ~1,250 lines)
-- **Move Brevo API key** to a Supabase Edge Function (currently exposed client-side)
+- **Harden email sending** by making `send-email` template-driven and rate-limited
 - **Add TypeScript** for safety as codebase grows
 - **Error tracking** — Sentry or similar
 - **Rate limiting** — prevent Bondzy spam

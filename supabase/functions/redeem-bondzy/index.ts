@@ -129,18 +129,37 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Invalid JSON body" }, 400);
   }
 
-  const bondzyId = typeof body.bondzy_id === "string" ? body.bondzy_id : "";
+  let bondzyId = typeof body.bondzy_id === "string" ? body.bondzy_id : "";
+  const claimToken = typeof body.claim_token === "string" ? body.claim_token.trim() : "";
   const lat = toNumber(body.lat);
   const lng = toNumber(body.lng);
   const accuracy = toNumber(body.accuracy);
 
-  if (!bondzyId) return json({ error: "Missing bondzy_id" }, 400);
+  if (!bondzyId && !claimToken) return json({ error: "Missing bondzy_id or claim_token" }, 400);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!supabaseUrl || !serviceRoleKey) return json({ error: "Supabase secrets are not configured" }, 500);
 
   const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+  let hasValidClaimToken = false;
+  if (claimToken) {
+    const { data: claim, error: claimError } = await supabase
+      .from("bondzy_claims")
+      .select("bondzy_id")
+      .eq("claim_token", claimToken)
+      .maybeSingle();
+
+    if (claimError) return json({ error: "Claim lookup failed" }, 500);
+    if (!claim?.bondzy_id) return json({ error: "Bondzy not found" }, 404);
+    if (bondzyId && bondzyId !== claim.bondzy_id) {
+      return json({ error: "Claim token does not match this Bondzy" }, 400);
+    }
+
+    bondzyId = claim.bondzy_id;
+    hasValidClaimToken = true;
+  }
 
   const { data: bondzyData, error: bondzyError } = await supabase
     .from("bondzies")
@@ -157,9 +176,19 @@ Deno.serve(async (req: Request) => {
   const jwt = authHeader.replace(/^Bearer\s+/i, "");
   const { data: userData } = jwt ? await supabase.auth.getUser(jwt) : { data: { user: null } };
   const user = userData?.user || null;
+  const userEmail = user?.email?.toLowerCase() || "";
+  const isRecipient = Boolean(
+    user &&
+      ((bondzy.recipient_id && user.id === bondzy.recipient_id) ||
+        (bondzy.recipient_email && bondzy.recipient_email.toLowerCase() === userEmail)),
+  );
 
   if (bondzy.type === "promise" && user?.id !== bondzy.creator_id) {
     return json({ error: "Only the creator can check in for a Promise Bondzy" }, 403);
+  }
+
+  if (bondzy.type === "reward" && !hasValidClaimToken && !isRecipient) {
+    return json({ error: "Use the private claim link to redeem this Reward Bondzy" }, 403);
   }
 
   const { data: secret, error: secretError } = await supabase
