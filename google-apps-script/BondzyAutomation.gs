@@ -28,6 +28,7 @@ var STUDIO_LNG     = -75.0000; // ← UPDATE THIS
 
 // What the reward says
 var REWARD_DESCRIPTION = '$5 off your next visit';
+var REWARD_LINK = 'POTTERY5'; // private code/link/text revealed only after verified redemption
 
 // How many minutes of grace period around the appointment time
 var GRACE_MINUTES = 10;
@@ -214,7 +215,8 @@ function createBondzy_(apiKey, recipientEmail, recipientName, dateStr, timeStr) 
     date: dateStr,
     time: timeStr,
     grace_minutes: GRACE_MINUTES,
-    reward_description: REWARD_DESCRIPTION
+    reward_description: REWARD_DESCRIPTION,
+    reward_link: REWARD_LINK
   };
 
   var options = {

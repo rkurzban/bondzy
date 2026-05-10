@@ -96,7 +96,7 @@
 ## Technical Debt (Address Before Scale)
 
 - **Split App.jsx** into separate component files (currently ~1,250 lines)
-- **Harden email sending** by making `send-email` template-driven and rate-limited
+- **Add email/function rate limiting** now that `send-email` is template-driven
 - **Add TypeScript** for safety as codebase grows
 - **Error tracking** — Sentry or similar
 - **Rate limiting** — prevent Bondzy spam

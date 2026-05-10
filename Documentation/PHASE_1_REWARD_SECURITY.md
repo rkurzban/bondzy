@@ -76,4 +76,4 @@ The public `?bondzy=<id>` link still acts like a bearer link in Phase 1. Anyone 
 
 Phase 2 addresses this by replacing public id links with opaque claim tokens. See `Documentation/PHASE_2_CLAIM_TOKENS.md`.
 
-Promise Bondzies were not fully tightened in this phase. Promise penalties have a different reveal path than Reward redemptions and should be reviewed separately.
+Promise penalties are tightened by the later security hardening pass. See `Documentation/SECURITY_HARDENING_PLAN.md`.

@@ -176,7 +176,7 @@ bondzies table:
 ## Known Limitations / Tech Debt
 
 - App.jsx is a single ~1,250-line file (no component splitting yet)
-- `send-email` Edge Function should become template-driven before scale instead of forwarding app-supplied email payloads
+- `send-email` Edge Function is template-driven; remaining email work is rate limiting before scale
 - No TypeScript, no automated tests
 - No analytics / admin dashboard
 

@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { buildRedemptionMessage, sendBrevoMessage } from "../_shared/bondzy-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -248,6 +249,16 @@ Deno.serve(async (req: Request) => {
 
   if (updateError || !updatedData) return json({ error: "Bondzy could not be redeemed" }, 409);
   const updated = updatedData as Bondzy;
+
+  const brevoKey = Deno.env.get("BREVO_API_KEY");
+  if (brevoKey) {
+    try {
+      const eventType = updated.type === "promise" ? "promise_kept" : "reward_redeemed";
+      await sendBrevoMessage(brevoKey, buildRedemptionMessage(eventType, updated));
+    } catch (error) {
+      console.error("Redemption email failed:", error);
+    }
+  }
 
   return json({
     success: true,

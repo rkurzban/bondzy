@@ -71,14 +71,14 @@ Send a JSON object with the following fields:
 | `date` | string | Yes | Date in `YYYY-MM-DD` format (e.g. `"2026-04-10"`) |
 | `time` | string | Yes | Time in `HH:MM` 24-hour format (e.g. `"14:00"` for 2:00 PM) |
 | `reward_description` | string | Yes | Human-readable description of the reward (e.g. `"$5 off your next visit"`) |
-| `reward_link` | string | Yes for `reward` | The private reward payload revealed after redemption. Despite the name, this can be a URL, promo code, or plain text string. |
+| `reward_link` | string | Yes | The private reward or Promise penalty payload revealed only through a server-approved path. Despite the name, this can be a URL, promo code, or plain text string. |
 | `reward_payload` | string | No | Alias for `reward_link`; supported for API callers, but prefer `reward_link` for now. |
 | `payload` | string | No | Alias for `reward_link`; supported for API callers, but prefer `reward_link` for now. |
 | `timezone` | string | No | IANA timezone for the appointment window. Defaults to `"America/New_York"`. |
 | `grace_minutes` | number | No | Minutes of grace period around the scheduled time. Defaults to `10`. |
 | `send_email` | boolean | No | Defaults to `true`. Set to `false` when the business sends its own email, such as The Pottery Spottery SendGrid flow. |
 
-For Reward Bondzies, `reward_link` is required because redemption now happens through the server-side `redeem-bondzy` function. The value is not intended to remain visible in `bondzies`; the database trigger stores it privately in `bondzy_secrets`.
+`reward_link` is required for both Reward and Promise Bondzies. The value is not intended to remain visible in `bondzies`; database triggers store it privately in `bondzy_secrets`.
 
 ### Example Request Body
 

@@ -57,7 +57,7 @@ const BONDZY = {
   // For "promise": describe the penalty if you don't show up.
   // For "reward":  this is what the recipient gets for showing up.
   rewardDescription: "I owe you a pottery class session if I don't show!",
-  rewardLink: "", // Optional URL or code (e.g. PayPal link, gift card code)
+  rewardLink: "", // Required private URL/code/text (e.g. PayPal link, gift card code)
 };
 
 // Set to false to skip sending emails (useful for testing)
@@ -75,8 +75,8 @@ function validate() {
     console.error("Missing environment variables:", missing.join(", "));
     process.exit(1);
   }
-  if (!BONDZY.recipientEmail || !BONDZY.locationName || !BONDZY.date || !BONDZY.time) {
-    console.error("BONDZY config is incomplete. Fill in recipientEmail, locationName, date, and time.");
+  if (!BONDZY.recipientEmail || !BONDZY.locationName || !BONDZY.date || !BONDZY.time || !BONDZY.rewardLink) {
+    console.error("BONDZY config is incomplete. Fill in recipientEmail, locationName, date, time, and rewardLink.");
     process.exit(1);
   }
 }

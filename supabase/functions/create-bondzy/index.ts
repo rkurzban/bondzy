@@ -272,8 +272,8 @@ Deno.serve(async (req: Request) => {
   if (!/^\d{2}:\d{2}$/.test(time)) {
     return json({ error: "time must use HH:MM 24-hour format" }, 400);
   }
-  if (type === "reward" && !rewardPayload) {
-    return json({ error: "reward_link is required for reward Bondzies" }, 400);
+  if (!rewardPayload) {
+    return json({ error: "reward_link is required for reward and promise Bondzies" }, 400);
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");

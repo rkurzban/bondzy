@@ -36,7 +36,7 @@ const json = (body: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
-const publicBondzy = (bondzy: Bondzy, includeRewardLink = false) => ({
+const publicBondzy = (bondzy: Bondzy, rewardValue?: string | null) => ({
   id: bondzy.id,
   type: bondzy.type,
   status: bondzy.status,
@@ -57,7 +57,7 @@ const publicBondzy = (bondzy: Bondzy, includeRewardLink = false) => ({
   reward_description: bondzy.reward_description,
   created_at: bondzy.created_at,
   redeemed_at: bondzy.redeemed_at,
-  ...(includeRewardLink ? { reward_link: bondzy.reward_link } : {}),
+  ...(rewardValue ? { reward_link: rewardValue } : {}),
 });
 
 Deno.serve(async (req: Request) => {
@@ -77,8 +77,9 @@ Deno.serve(async (req: Request) => {
       : typeof body.token === "string"
         ? body.token.trim()
         : "";
+  let bondzyId = typeof body.bondzy_id === "string" ? body.bondzy_id.trim() : "";
 
-  if (!claimToken) return json({ error: "Missing claim token" }, 400);
+  if (!claimToken && !bondzyId) return json({ error: "Missing claim token or bondzy_id" }, 400);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -88,21 +89,24 @@ Deno.serve(async (req: Request) => {
     auth: { persistSession: false },
   });
 
-  const { data: claim, error: claimError } = await supabase
-    .from("bondzy_claims")
-    .select("bondzy_id")
-    .eq("claim_token", claimToken)
-    .maybeSingle();
+  if (claimToken) {
+    const { data: claim, error: claimError } = await supabase
+      .from("bondzy_claims")
+      .select("bondzy_id")
+      .eq("claim_token", claimToken)
+      .maybeSingle();
 
-  if (claimError) return json({ error: "Claim lookup failed" }, 500);
-  if (!claim) return json({ error: "Bondzy not found" }, 404);
+    if (claimError) return json({ error: "Claim lookup failed" }, 500);
+    if (!claim) return json({ error: "Bondzy not found" }, 404);
+    bondzyId = claim.bondzy_id;
+  }
 
   const { data: bondzyData, error: bondzyError } = await supabase
     .from("bondzies")
     .select(
       "id,type,status,creator_id,creator_email,creator_name,recipient_email,recipient_id,recipient_name,location_name,location_address,location_lat,location_lng,date,time,grace_minutes,timezone,reward_description,reward_link,created_at,redeemed_at",
     )
-    .eq("id", claim.bondzy_id)
+    .eq("id", bondzyId)
     .single();
 
   if (bondzyError || !bondzyData) return json({ error: "Bondzy not found" }, 404);
@@ -120,6 +124,10 @@ Deno.serve(async (req: Request) => {
         (bondzy.recipient_email && bondzy.recipient_email.toLowerCase() === userEmail)),
   );
 
+  if (!claimToken && !user) {
+    return json({ error: "Sign in to view this Bondzy", requires_auth: true }, 401);
+  }
+
   if (bondzy.type === "promise") {
     if (!user) {
       return json(
@@ -136,12 +144,25 @@ Deno.serve(async (req: Request) => {
     }
   }
 
+  if (!claimToken && !isCreator && !isRecipient) {
+    return json({ error: "This Bondzy is only visible to the creator and recipient" }, 403);
+  }
+
   const role = isCreator ? "creator" : "recipient";
-  const includeRewardLink = bondzy.type === "promise" && bondzy.status === "forfeit" && isRecipient;
+  let rewardValue: string | null = null;
+  if (bondzy.type === "promise" && bondzy.status === "forfeit" && isRecipient) {
+    const { data: secret, error: secretError } = await supabase
+      .from("bondzy_secrets")
+      .select("reward_value")
+      .eq("bondzy_id", bondzy.id)
+      .maybeSingle();
+    if (secretError) return json({ error: "Penalty lookup failed" }, 500);
+    rewardValue = secret?.reward_value || bondzy.reward_link || null;
+  }
 
   return json({
     success: true,
     role,
-    bondzy: publicBondzy(bondzy, includeRewardLink),
+    bondzy: publicBondzy(bondzy, rewardValue),
   });
 });

@@ -97,13 +97,10 @@ select * from cron.job;
 
 ---
 
-### 4. Email Function Hardening 🔒
-**Status:** Fixed for key exposure. The old Brevo key was revoked, a new key was stored as the Supabase `BREVO_API_KEY` Edge Function secret, and the active app no longer uses a browser-exposed Brevo Vite variable.
+### 4. Email Function Hardening
+**Status:** Hardened. `send-email` now accepts only approved creation event names plus a Bondzy id, validates the authenticated creator, and renders the email server-side. Post-redemption emails are sent by `redeem-bondzy`, not by the browser.
 
-**Remaining risk:** `send-email` currently forwards the payload the app sends to Brevo. The Brevo key is protected, but before scale this function should become template-driven so callers can only trigger approved Bondzy email types.
-
-**Recommended next step:** Have the app call `send-email` with a template name and Bondzy id. The Edge Function should load the Bondzy, build the recipient/sender/subject/body server-side, and reject unsupported email types.
-
+**Remaining risk:** Add rate limiting before public scale.
 ---
 
 ## Infrastructure
