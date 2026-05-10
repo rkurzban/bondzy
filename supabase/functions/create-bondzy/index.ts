@@ -1,12 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendCreationEmails, type BondzyEmailRow, type BondzyType } from "../_shared/bondzy-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-api-key, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
-
-type BondzyType = "reward" | "promise";
 
 type RequestBody = Record<string, unknown>;
 
@@ -23,30 +22,6 @@ const cleanNumber = (value: unknown) => {
   return Number.isFinite(n) ? n : null;
 };
 
-const htmlEscape = (value: string) =>
-  value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-
-const formattedDate = (date: string, timezone: string) =>
-  new Date(`${date}T00:00:00`).toLocaleDateString("en-US", {
-    timeZone: timezone,
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
-const formattedTime = (time: string) => {
-  const [hours, minutes] = time.split(":");
-  const h = Number(hours);
-  const suffix = h >= 12 ? "PM" : "AM";
-  return `${h % 12 || 12}:${minutes || "00"} ${suffix}`;
-};
-
 const required = (body: RequestBody, fields: string[]) => {
   for (const field of fields) {
     const value = body[field];
@@ -54,161 +29,6 @@ const required = (body: RequestBody, fields: string[]) => {
   }
   return null;
 };
-
-async function sendBondzyEmails({
-  brevoKey,
-  type,
-  creatorEmail,
-  recipientEmail,
-  recipientName,
-  locationName,
-  locationAddress,
-  date,
-  time,
-  timezone,
-  graceMinutes,
-  rewardDescription,
-  bondzyUrl,
-}: {
-  brevoKey: string;
-  type: BondzyType;
-  creatorEmail: string;
-  recipientEmail: string;
-  recipientName: string;
-  locationName: string;
-  locationAddress: string;
-  date: string;
-  time: string;
-  timezone: string;
-  graceMinutes: number;
-  rewardDescription: string;
-  bondzyUrl: string;
-}) {
-  const isPromise = type === "promise";
-  const dateLabel = formattedDate(date, timezone);
-  const timeLabel = formattedTime(time);
-  const safeRecipientName = htmlEscape(recipientName);
-  const safeLocationName = htmlEscape(locationName);
-  const safeLocationAddress = htmlEscape(locationAddress);
-  const safeRewardDescription = htmlEscape(rewardDescription);
-  const safeCreatorEmail = htmlEscape(creatorEmail);
-  const safeBondzyUrl = htmlEscape(bondzyUrl);
-
-  const detailLines = [
-    `Recipient: ${recipientName} (${recipientEmail})`,
-    `Location: ${locationName}${locationAddress ? `, ${locationAddress}` : ""}`,
-    `When: ${dateLabel} at ${timeLabel}`,
-    `${isPromise ? "Penalty" : "Reward"}: ${rewardDescription}`,
-  ].join("\n");
-
-  const recipientSubject = isPromise
-    ? "Someone made you a Promise Bondzy"
-    : "You have a Reward Bondzy waiting";
-
-  const recipientText = isPromise
-    ? `Hi ${recipientName},
-
-Someone made a Promise Bondzy to you. They are committing to be at ${locationName} on ${dateLabel} at ${timeLabel}. If they do not show up, you receive the penalty.
-
-Penalty: ${rewardDescription}
-
-Open Bondzy: ${bondzyUrl}
-
-Bondzy - No More Hoping. Make Things Happen.`
-    : `Hi ${recipientName},
-
-Show up on time for your appointment to claim your reward.
-
-Go to: ${locationName}
-When: ${dateLabel} at ${timeLabel}
-Grace period: ${graceMinutes} minutes
-Reward: ${rewardDescription}
-
-Open Bondzy when you are at the location and verify your GPS to unlock your reward.
-
-Open Bondzy: ${bondzyUrl}
-
-Bondzy - No More Hoping. Make Things Happen.`;
-
-  const recipientHtml = `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;background:#ffffff;">
-    <div style="background:#1B2A4A;padding:20px 28px;text-align:center;border-radius:12px 12px 0 0;">
-      <img src="https://app.bondzy.com/bondzymarkv2.png" alt="Bondzy" width="40" height="40" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/>
-      <span style="color:#D4A843;font-size:22px;font-weight:700;vertical-align:middle;">Bondzy</span>
-    </div>
-    <div style="padding:28px;border:1px solid #E8ECF0;border-top:4px solid #D4A843;">
-      <h1 style="color:#1B2A4A;font-size:24px;line-height:1.25;margin:0 0 14px;">${isPromise ? "A Promise Bondzy was made to you" : "You have a reward waiting"}</h1>
-      <p style="color:#5A6570;font-size:15px;line-height:1.6;margin:0 0 22px;">Hi ${safeRecipientName}, ${isPromise ? "someone made a promise they need to verify in person." : "show up on time and verify your location to unlock it."}</p>
-      <div style="background:#F8F9FA;border:1px solid #E8ECF0;border-radius:10px;padding:16px;margin-bottom:22px;">
-        <p style="margin:0 0 8px;color:#1B2A4A;font-size:14px;"><strong>Location:</strong> ${safeLocationName}</p>
-        ${safeLocationAddress ? `<p style="margin:0 0 8px;color:#1B2A4A;font-size:14px;"><strong>Address:</strong> ${safeLocationAddress}</p>` : ""}
-        <p style="margin:0 0 8px;color:#1B2A4A;font-size:14px;"><strong>When:</strong> ${htmlEscape(dateLabel)} at ${htmlEscape(timeLabel)}</p>
-        <p style="margin:0;color:#1B2A4A;font-size:14px;"><strong>${isPromise ? "Penalty" : "Reward"}:</strong> ${safeRewardDescription}</p>
-      </div>
-      <div style="text-align:center;">
-        <a href="${safeBondzyUrl}" style="display:inline-block;background:#D4A843;color:#1B2A4A;padding:14px 34px;border-radius:9px;text-decoration:none;font-weight:800;">Open Bondzy</a>
-      </div>
-    </div>
-    <div style="background:#F5F6F8;padding:18px;text-align:center;color:#5A6570;font-size:12px;border-radius:0 0 12px 12px;">
-      Bondzy - No More Hoping. Make Things Happen.
-    </div>
-  </div>`;
-
-  const creatorSubject = isPromise ? "Your Promise Bondzy is posted" : "Your Reward Bondzy is posted";
-  const creatorText = `${creatorSubject}
-
-${detailLines}
-
-View dashboard: https://app.bondzy.com`;
-
-  const creatorHtml = `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;background:#ffffff;">
-    <div style="background:#1B2A4A;padding:20px 28px;text-align:center;border-radius:12px 12px 0 0;">
-      <img src="https://app.bondzy.com/bondzymarkv2.png" alt="Bondzy" width="40" height="40" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/>
-      <span style="color:#D4A843;font-size:22px;font-weight:700;vertical-align:middle;">Bondzy</span>
-    </div>
-    <div style="padding:28px;border:1px solid #E8ECF0;border-top:4px solid #2E8B57;">
-      <h1 style="color:#1B2A4A;font-size:24px;line-height:1.25;margin:0 0 14px;">${htmlEscape(creatorSubject)}</h1>
-      <div style="background:#F8F9FA;border:1px solid #E8ECF0;border-radius:10px;padding:16px;margin-bottom:22px;">
-        <p style="margin:0 0 8px;color:#1B2A4A;font-size:14px;"><strong>Creator:</strong> ${safeCreatorEmail}</p>
-        <p style="margin:0 0 8px;color:#1B2A4A;font-size:14px;"><strong>Recipient:</strong> ${safeRecipientName} (${htmlEscape(recipientEmail)})</p>
-        <p style="margin:0 0 8px;color:#1B2A4A;font-size:14px;"><strong>Location:</strong> ${safeLocationName}</p>
-        <p style="margin:0 0 8px;color:#1B2A4A;font-size:14px;"><strong>When:</strong> ${htmlEscape(dateLabel)} at ${htmlEscape(timeLabel)}</p>
-        <p style="margin:0;color:#1B2A4A;font-size:14px;"><strong>${isPromise ? "Penalty" : "Reward"}:</strong> ${safeRewardDescription}</p>
-      </div>
-      <div style="text-align:center;">
-        <a href="https://app.bondzy.com" style="display:inline-block;background:#1B2A4A;color:#ffffff;padding:14px 34px;border-radius:9px;text-decoration:none;font-weight:800;">View Dashboard</a>
-      </div>
-    </div>
-  </div>`;
-
-  const messages = [
-    {
-      sender: { name: "Bondzy", email: "info@bondzy.com" },
-      to: [{ email: recipientEmail, name: recipientName }],
-      subject: recipientSubject,
-      textContent: recipientText,
-      htmlContent: recipientHtml,
-    },
-    {
-      sender: { name: "Bondzy", email: "info@bondzy.com" },
-      to: [{ email: creatorEmail }],
-      subject: creatorSubject,
-      textContent: creatorText,
-      htmlContent: creatorHtml,
-    },
-  ];
-
-  for (const message of messages) {
-    try {
-      await fetch("https://api.brevo.com/v3/smtp/email", {
-        method: "POST",
-        headers: { "api-key": brevoKey, "Content-Type": "application/json" },
-        body: JSON.stringify(message),
-      });
-    } catch (error) {
-      console.error("Brevo email failed:", error);
-    }
-  }
-}
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -286,7 +106,7 @@ Deno.serve(async (req: Request) => {
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("id")
+    .select("id,name")
     .eq("email", creatorEmail)
     .maybeSingle();
 
@@ -332,21 +152,15 @@ Deno.serve(async (req: Request) => {
 
   const brevoKey = Deno.env.get("BREVO_API_KEY");
   if (brevoKey && shouldSendEmail) {
-    await sendBondzyEmails({
+    await sendCreationEmails(
       brevoKey,
-      type,
-      creatorEmail,
-      recipientEmail,
-      recipientName,
-      locationName,
-      locationAddress,
-      date,
-      time,
-      timezone,
-      graceMinutes,
-      rewardDescription,
+      {
+        ...bondzy,
+        creator_name: profile.name || null,
+        redeemed_at: null,
+      } as BondzyEmailRow,
       bondzyUrl,
-    });
+    );
   }
 
   return json(

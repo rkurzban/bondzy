@@ -28,10 +28,26 @@ type BrevoMessage = {
   htmlContent: string;
 };
 
+type DetailRow = {
+  icon: string;
+  label: string;
+  valueHtml: string;
+  iconBg?: string;
+  highlight?: boolean;
+};
+
 export type CreationEventType = "recipient_created" | "creator_created";
 export type RedemptionEventType = "reward_redeemed" | "promise_kept";
 
 const sender = { name: "Bondzy", email: "info@bondzy.com" };
+
+const NAVY = "#1B2A4A";
+const GOLD = "#D4A843";
+const GREEN = "#2E8B57";
+const TEXT = "#0A1A3A";
+const MUTED = "#4F5B6B";
+const LINE = "#E3E8EF";
+const SOFT = "#F7F9FC";
 
 export const htmlEscape = (value: string | null | undefined) =>
   (value || "")
@@ -48,7 +64,7 @@ const dateLabel = (bondzy: BondzyEmailRow) => {
   if (!bondzy.date) return "the scheduled date";
   return new Date(`${bondzy.date}T00:00:00`).toLocaleDateString("en-US", {
     timeZone: bondzy.timezone || "UTC",
-    weekday: "long",
+    weekday: "short",
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -65,26 +81,112 @@ const timeLabel = (bondzy: BondzyEmailRow) => {
 const locationLabel = (bondzy: BondzyEmailRow) =>
   `${bondzy.location_name || "the location"}${bondzy.location_address ? `, ${bondzy.location_address}` : ""}`;
 
-const shell = (heading: string, bodyHtml: string, accent = "#D4A843") => `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;background:#ffffff;">
-  <div style="background:#1B2A4A;padding:20px 28px;text-align:center;border-radius:12px 12px 0 0;">
-    <img src="https://app.bondzy.com/bondzymarkv2.png" alt="Bondzy" width="40" height="40" style="display:inline-block;vertical-align:middle;margin-right:10px;border:0;"/>
-    <span style="color:#D4A843;font-size:22px;font-weight:700;vertical-align:middle;">Bondzy</span>
-  </div>
-  <div style="padding:28px;border:1px solid #E8ECF0;border-top:4px solid ${accent};">
-    <h1 style="color:#1B2A4A;font-size:24px;line-height:1.25;margin:0 0 14px;">${htmlEscape(heading)}</h1>
-    ${bodyHtml}
-  </div>
-  <div style="background:#F5F6F8;padding:18px;text-align:center;color:#5A6570;font-size:12px;border-radius:0 0 12px 12px;">
-    Bondzy - No More Hoping. Make Things Happen.
+const rewardLabel = (bondzy: BondzyEmailRow) =>
+  bondzy.reward_description || (bondzy.type === "promise" ? "Bondzy Penalty" : "Bondzy Reward");
+
+const graceLabel = (bondzy: BondzyEmailRow) => `${bondzy.grace_minutes ?? 10} minutes`;
+
+const brandLine = () => `<div style="text-align:center;margin:0 0 34px;">
+  <img src="https://app.bondzy.com/bondzymarkv2.png" alt="Bondzy" width="48" height="48" style="display:inline-block;vertical-align:middle;margin-right:14px;border:0;border-radius:8px;background:#21345C;"/>
+  <span style="display:inline-block;vertical-align:middle;color:${GOLD};font-size:24px;font-weight:800;line-height:1;">Bondzy</span>
+</div>`;
+
+const hero = (icon: string, headingHtml: string, subheadingHtml: string, accent = GOLD) => `<div style="background:${NAVY};padding:22px 34px 46px;text-align:center;border-radius:10px 10px 0 0;">
+  ${brandLine()}
+  <div style="width:76px;height:76px;border-radius:50%;background:#ffffff;margin:0 auto 26px;color:${GOLD};font-size:34px;line-height:76px;text-align:center;">${icon}</div>
+  <h1 style="color:#ffffff;font-size:34px;line-height:1.18;margin:0 0 12px;font-weight:900;">${headingHtml}</h1>
+  <p style="color:${GOLD};font-size:18px;line-height:1.45;margin:0;">${subheadingHtml}</p>
+</div>
+<div style="height:4px;background:${accent};line-height:4px;font-size:4px;">&nbsp;</div>`;
+
+const compactHero = (icon: string, headingHtml: string, subheadingHtml: string, accent = GREEN) => `<div style="background:${NAVY};padding:22px 34px 34px;text-align:center;border-radius:10px 10px 0 0;">
+  ${brandLine()}
+  <div style="width:58px;height:58px;border-radius:50%;background:#ffffff;margin:0 auto 20px;color:${accent};font-size:28px;line-height:58px;text-align:center;">${icon}</div>
+  <h1 style="color:#ffffff;font-size:28px;line-height:1.22;margin:0 0 10px;font-weight:900;">${headingHtml}</h1>
+  <p style="color:${GOLD};font-size:16px;line-height:1.45;margin:0;">${subheadingHtml}</p>
+</div>
+<div style="height:4px;background:${accent};line-height:4px;font-size:4px;">&nbsp;</div>`;
+
+const emailShell = (innerHtml: string) => `<div style="margin:0;padding:0;background:#ffffff;">
+  <div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:0 auto;background:#ffffff;">
+    ${innerHtml}
+    <div style="background:#F4F6F9;padding:20px;text-align:center;color:${MUTED};font-size:13px;border:1px solid ${LINE};border-top:none;border-radius:0 0 10px 10px;">
+      Bondzy - No More Hoping. Make Things Happen.
+    </div>
   </div>
 </div>`;
 
-const detailsBlock = (bondzy: BondzyEmailRow) => `<div style="background:#F8F9FA;border:1px solid #E8ECF0;border-radius:10px;padding:16px;margin:18px 0;">
-  <p style="margin:0 0 8px;color:#1B2A4A;font-size:14px;"><strong>Location:</strong> ${htmlEscape(bondzy.location_name)}</p>
-  ${bondzy.location_address ? `<p style="margin:0 0 8px;color:#1B2A4A;font-size:14px;"><strong>Address:</strong> ${htmlEscape(bondzy.location_address)}</p>` : ""}
-  <p style="margin:0 0 8px;color:#1B2A4A;font-size:14px;"><strong>When:</strong> ${htmlEscape(dateLabel(bondzy))} at ${htmlEscape(timeLabel(bondzy))}</p>
-  <p style="margin:0;color:#1B2A4A;font-size:14px;"><strong>${bondzy.type === "promise" ? "Penalty" : "Reward"}:</strong> ${htmlEscape(bondzy.reward_description)}</p>
+const contentSection = (innerHtml: string) => `<div style="padding:34px 32px 38px;border-left:1px solid ${LINE};border-right:1px solid ${LINE};background:#ffffff;">
+  ${innerHtml}
 </div>`;
+
+const ctaButton = (href: string, labelHtml: string, variant: "gold" | "navy" = "gold") => {
+  const background = variant === "gold" ? GOLD : NAVY;
+  const color = variant === "gold" ? TEXT : "#ffffff";
+  return `<div style="text-align:center;margin:28px 0 0;">
+    <a href="${htmlEscape(href)}" style="display:inline-block;background:${background};color:${color};padding:16px 36px;border-radius:10px;text-decoration:none;font-weight:900;font-size:16px;line-height:1.2;">${labelHtml}</a>
+  </div>`;
+};
+
+const detailTable = (rows: DetailRow[]) => `<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:separate;border-spacing:0;border:1px solid ${LINE};border-radius:12px;overflow:hidden;margin:26px 0;background:${SOFT};">
+  ${rows
+    .map((row, index) => `<tr>
+      <td style="padding:16px 18px;background:${row.highlight ? "#FFF9E8" : SOFT};border-top:${index === 0 ? "0" : `1px solid ${LINE}`};">
+        <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
+          <tr>
+            <td width="58" valign="top" style="width:58px;">
+              <div style="width:40px;height:40px;border-radius:9px;background:${row.iconBg || NAVY};color:#ffffff;font-size:12px;font-weight:900;letter-spacing:0.4px;line-height:40px;text-align:center;">${row.icon}</div>
+            </td>
+            <td valign="top" style="padding-left:8px;">
+              <div style="color:#8A93A3;font-size:12px;letter-spacing:1.2px;font-weight:900;text-transform:uppercase;line-height:1.2;margin:1px 0 4px;">${row.label}</div>
+              <div style="color:${TEXT};font-size:16px;line-height:1.38;font-weight:800;">${row.valueHtml}</div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>`)
+    .join("")}
+</table>`;
+
+const scheduleRows = (bondzy: BondzyEmailRow, finalLabel: string, finalIcon: string, finalIconBg = GOLD): DetailRow[] => [
+  {
+    icon: "GO",
+    label: "Go to",
+    valueHtml: htmlEscape(locationLabel(bondzy)),
+  },
+  {
+    icon: "ON",
+    label: "When",
+    valueHtml: `${htmlEscape(dateLabel(bondzy))} at ${htmlEscape(timeLabel(bondzy))}`,
+  },
+  {
+    icon: "+/-",
+    label: "Grace period",
+    valueHtml: htmlEscape(graceLabel(bondzy)),
+  },
+  {
+    icon: finalIcon,
+    label: finalLabel,
+    valueHtml: htmlEscape(rewardLabel(bondzy)),
+    iconBg: finalIconBg,
+    highlight: true,
+  },
+];
+
+const creatorRows = (bondzy: BondzyEmailRow): DetailRow[] => [
+  {
+    icon: "TO",
+    label: "Recipient",
+    valueHtml: htmlEscape(
+      `${bondzy.recipient_name || "Recipient"}${bondzy.recipient_email ? ` (${bondzy.recipient_email})` : ""}`,
+    ),
+  },
+  ...scheduleRows(
+    bondzy,
+    bondzy.type === "promise" ? "Penalty" : "Reward",
+    bondzy.type === "promise" ? "PEN" : "RWD",
+  ),
+];
 
 export async function sendBrevoMessage(brevoKey: string, message: Omit<BrevoMessage, "sender">) {
   const response = await fetch("https://api.brevo.com/v3/smtp/email", {
@@ -106,7 +208,8 @@ export function buildCreationMessage(
 ): Omit<BrevoMessage, "sender"> {
   const isPromise = bondzy.type === "promise";
   const creator = creatorName(bondzy);
-  const safeUrl = htmlEscape(bondzyUrl);
+  const safeCreator = htmlEscape(creator);
+  const safeRecipient = htmlEscape(bondzy.recipient_name || "there");
 
   if (eventType === "recipient_created") {
     const subject = isPromise
@@ -114,7 +217,23 @@ export function buildCreationMessage(
       : `${creator} has a Reward Bondzy for you`;
     const intro = isPromise
       ? `${creator} is committing to be somewhere at a specific time. If they do not show up, you receive the penalty.`
-      : "Show up on time and verify your location to unlock your reward.";
+      : "Show up on time for your appointment to claim your reward.";
+    const heading = isPromise
+      ? "Someone made you<br/>a Promise Bondzy."
+      : "You've got a reward<br/>waiting for you.";
+    const subheading = isPromise
+      ? `${safeCreator} backed their word with Bondzy`
+      : `${safeCreator} set one up just for you`;
+    const details = isPromise
+      ? detailTable([
+          {
+            icon: "BY",
+            label: "Commitment by",
+            valueHtml: safeCreator,
+          },
+          ...scheduleRows(bondzy, "Penalty if missed", "PEN"),
+        ])
+      : detailTable(scheduleRows(bondzy, "Your reward", "RWD"));
 
     return {
       to: [{ email: bondzy.recipient_email || "", name: bondzy.recipient_name || undefined }],
@@ -125,19 +244,25 @@ ${intro}
 
 Where: ${locationLabel(bondzy)}
 When: ${dateLabel(bondzy)} at ${timeLabel(bondzy)}
-${isPromise ? "Penalty" : "Reward"}: ${bondzy.reward_description || ""}
+Grace period: ${graceLabel(bondzy)}
+${isPromise ? "Penalty" : "Reward"}: ${rewardLabel(bondzy)}
 
 Open Bondzy: ${bondzyUrl}`,
-      htmlContent: shell(
-        isPromise ? "A Promise Bondzy was made to you" : "You have a reward waiting",
-        `<p style="color:#5A6570;font-size:15px;line-height:1.6;margin:0;">Hi ${htmlEscape(bondzy.recipient_name || "there")}, ${htmlEscape(intro)}</p>
-        ${detailsBlock(bondzy)}
-        <div style="text-align:center;"><a href="${safeUrl}" style="display:inline-block;background:#D4A843;color:#1B2A4A;padding:14px 34px;border-radius:9px;text-decoration:none;font-weight:800;">Open Bondzy</a></div>`,
+      htmlContent: emailShell(
+        `${hero(isPromise ? "&#129309;" : "&#127873;", heading, subheading)}
+        ${contentSection(
+          `<h2 style="color:${TEXT};font-size:24px;line-height:1.25;margin:0 0 12px;font-weight:900;">Hi ${safeRecipient}! &#128075;</h2>
+          <p style="color:${MUTED};font-size:16px;line-height:1.55;margin:0;">${htmlEscape(intro)}</p>
+          ${details}
+          ${ctaButton(bondzyUrl, isPromise ? "View My Promise &rarr;" : "Claim My Reward &rarr;")}`,
+        )}`,
       ),
     };
   }
 
   const subject = isPromise ? "Your Promise Bondzy is posted" : "Your Reward Bondzy is posted";
+  const safeTarget = htmlEscape(bondzy.recipient_name || bondzy.recipient_email || "your recipient");
+
   return {
     to: [{ email: bondzy.creator_email || "" }],
     subject,
@@ -146,15 +271,22 @@ Open Bondzy: ${bondzyUrl}`,
 Recipient: ${bondzy.recipient_name || ""} (${bondzy.recipient_email || ""})
 Where: ${locationLabel(bondzy)}
 When: ${dateLabel(bondzy)} at ${timeLabel(bondzy)}
-${isPromise ? "Penalty" : "Reward"}: ${bondzy.reward_description || ""}
+Grace period: ${graceLabel(bondzy)}
+${isPromise ? "Penalty" : "Reward"}: ${rewardLabel(bondzy)}
 
 View Dashboard: https://app.bondzy.com`,
-    htmlContent: shell(
-      subject,
-      `<p style="color:#5A6570;font-size:15px;line-height:1.6;margin:0;">Your Bondzy for ${htmlEscape(bondzy.recipient_name)} is active.</p>
-      ${detailsBlock(bondzy)}
-      <div style="text-align:center;"><a href="https://app.bondzy.com" style="display:inline-block;background:#1B2A4A;color:#ffffff;padding:14px 34px;border-radius:9px;text-decoration:none;font-weight:800;">View Dashboard</a></div>`,
-      "#2E8B57",
+    htmlContent: emailShell(
+      `${compactHero(
+        isPromise ? "&#129309;" : "&#127873;",
+        htmlEscape(subject),
+        `Your Bondzy for ${safeTarget} is active.`,
+        GREEN,
+      )}
+      ${contentSection(
+        `<p style="color:${MUTED};font-size:16px;line-height:1.55;margin:0;">Everything is posted and ready.</p>
+        ${detailTable(creatorRows(bondzy))}
+        ${ctaButton("https://app.bondzy.com", "View Dashboard", "navy")}`,
+      )}`,
     ),
   };
 }
@@ -164,9 +296,29 @@ export function buildRedemptionMessage(
   bondzy: BondzyEmailRow,
 ): Omit<BrevoMessage, "sender"> {
   const redeemedAt = bondzy.redeemed_at ? new Date(bondzy.redeemed_at).toLocaleString("en-US") : "just now";
+  const actionRows = (label: string): DetailRow[] => [
+    {
+      icon: "GO",
+      label: "Location",
+      valueHtml: htmlEscape(locationLabel(bondzy)),
+    },
+    {
+      icon: "ON",
+      label: "Scheduled",
+      valueHtml: `${htmlEscape(dateLabel(bondzy))} at ${htmlEscape(timeLabel(bondzy))}`,
+    },
+    {
+      icon: "OK",
+      label,
+      valueHtml: htmlEscape(redeemedAt),
+      iconBg: GREEN,
+      highlight: true,
+    },
+  ];
 
   if (eventType === "promise_kept") {
     const creator = creatorName(bondzy);
+    const safeCreator = htmlEscape(creator);
     return {
       to: [{ email: bondzy.recipient_email || "", name: bondzy.recipient_name || undefined }],
       subject: `${creator} kept their promise`,
@@ -179,16 +331,17 @@ Scheduled: ${dateLabel(bondzy)} at ${timeLabel(bondzy)}
 Checked in: ${redeemedAt}
 
 The commitment was honored. No penalty triggered.`,
-      htmlContent: shell(
-        `${creator} kept their promise`,
-        `<p style="color:#5A6570;font-size:15px;line-height:1.6;margin:0;">${htmlEscape(creator)} checked in and kept their Promise Bondzy.</p>
-        ${detailsBlock(bondzy)}
-        <p style="color:#5A6570;font-size:14px;line-height:1.6;margin:0;">Checked in: ${htmlEscape(redeemedAt)}</p>`,
-        "#2E8B57",
+      htmlContent: emailShell(
+        `${compactHero("&#10003;", `${safeCreator} kept their promise`, "The commitment was honored. No penalty triggered.", GREEN)}
+        ${contentSection(
+          `<p style="color:${MUTED};font-size:16px;line-height:1.55;margin:0;">Good news: ${safeCreator} checked in on time.</p>
+          ${detailTable(actionRows("Checked in"))}`,
+        )}`,
       ),
     };
   }
 
+  const safeRecipient = htmlEscape(bondzy.recipient_name || "Your recipient");
   return {
     to: [{ email: bondzy.creator_email || "" }],
     subject: `${bondzy.recipient_name || "Your recipient"} claimed your Bondzy`,
@@ -197,15 +350,22 @@ The commitment was honored. No penalty triggered.`,
 Location: ${locationLabel(bondzy)}
 Scheduled: ${dateLabel(bondzy)} at ${timeLabel(bondzy)}
 Claimed: ${redeemedAt}
-Reward: ${bondzy.reward_description || ""}
+Reward: ${rewardLabel(bondzy)}
 
 View Dashboard: https://app.bondzy.com`,
-    htmlContent: shell(
-      `${bondzy.recipient_name || "Your recipient"} claimed your Bondzy`,
-      `<p style="color:#5A6570;font-size:15px;line-height:1.6;margin:0;">${htmlEscape(bondzy.recipient_name || "Your recipient")} successfully redeemed their Bondzy reward.</p>
-      ${detailsBlock(bondzy)}
-      <p style="color:#5A6570;font-size:14px;line-height:1.6;margin:0;">Claimed: ${htmlEscape(redeemedAt)}</p>`,
-      "#2E8B57",
+    htmlContent: emailShell(
+      `${compactHero("&#10003;", `${safeRecipient} claimed your Bondzy`, "They showed up and claimed the reward.", GREEN)}
+      ${contentSection(
+        `<p style="color:${MUTED};font-size:16px;line-height:1.55;margin:0;">Success: ${safeRecipient} redeemed their Bondzy reward.</p>
+        ${detailTable([...actionRows("Claimed"), {
+          icon: "RWD",
+          label: "Reward",
+          valueHtml: htmlEscape(rewardLabel(bondzy)),
+          iconBg: GOLD,
+          highlight: true,
+        }])}
+        ${ctaButton("https://app.bondzy.com", "View Dashboard", "navy")}`,
+      )}`,
     ),
   };
 }

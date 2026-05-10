@@ -98,7 +98,7 @@ const creatorN=bz=>bz.creator_name||bz.creator?.name||(bz.creator_email||"").spl
 const getDist=(a,b,c,d)=>{const R=6371000,dL=((c-a)*Math.PI)/180,dN=((d-b)*Math.PI)/180;const x=Math.sin(dL/2)**2+Math.cos((a*Math.PI)/180)*Math.cos((c*Math.PI)/180)*Math.sin(dN/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));};
 const isExpiredClient=(b)=>{if(b.status!=="active"||!b.date||!b.time)return false;const end=new Date(`${b.date}T${b.time}`).getTime()+(b.grace_minutes||10)*60000;return Date.now()>end;};
 const isURL=s=>/^https?:\/\//i.test(s||"");
-const BONDZY_SELECT="id,type,status,creator_id,creator_email,creator_name,recipient_email,recipient_id,recipient_name,location_name,location_address,location_lat,location_lng,date,time,grace_minutes,timezone,reward_description,reward_link,created_at,redeemed_at,creator:profiles!creator_id(email,name)";
+const BONDZY_SELECT="id,type,status,creator_id,creator_email,creator_name,recipient_email,recipient_id,recipient_name,location_name,location_address,location_lat,location_lng,date,time,grace_minutes,timezone,reward_description,reward_link,created_at,redeemed_at";
 const APP_URL="https://app.bondzy.com";
 const claimLink=(token,origin=APP_URL)=>`${origin}?claim=${encodeURIComponent(token)}`;
 const getClaimToken=async(bondzyId)=>{
@@ -1040,7 +1040,8 @@ export default function BondzyApp() {
     if(!session)return;
     const load=async()=>{
       setBzLoad(true);
-      const{data}=await supabase.from("bondzies").select(BONDZY_SELECT).order("created_at",{ascending:false});
+      const{data,error}=await supabase.from("bondzies").select(BONDZY_SELECT).order("created_at",{ascending:false});
+      if(error){console.error("Bondzy load failed:",error);setBzLoad(false);return;}
       setBondzies((data||[]).map(b=>({...b,creator_email:b.creator_email||b.creator?.email||""})));
       setBzLoad(false);
     };
