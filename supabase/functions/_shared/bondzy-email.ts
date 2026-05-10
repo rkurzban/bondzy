@@ -29,10 +29,10 @@ type BrevoMessage = {
 };
 
 type DetailRow = {
-  icon: string;
+  iconFile: string;
+  iconAlt: string;
   label: string;
   valueHtml: string;
-  iconBg?: string;
   highlight?: boolean;
 };
 
@@ -48,6 +48,7 @@ const TEXT = "#0A1A3A";
 const MUTED = "#4F5B6B";
 const LINE = "#E3E8EF";
 const SOFT = "#F7F9FC";
+const ICON_BASE_URL = "https://app.bondzy.com/email-icons";
 
 export const htmlEscape = (value: string | null | undefined) =>
   (value || "")
@@ -91,17 +92,22 @@ const brandLine = () => `<div style="text-align:center;margin:0 0 34px;">
   <span style="display:inline-block;vertical-align:middle;color:${GOLD};font-size:24px;font-weight:800;line-height:1;">Bondzy</span>
 </div>`;
 
-const hero = (icon: string, headingHtml: string, subheadingHtml: string, accent = GOLD) => `<div style="background:${NAVY};padding:22px 34px 46px;text-align:center;border-radius:10px 10px 0 0;">
+const iconUrl = (file: string) => `${ICON_BASE_URL}/${file}`;
+
+const iconImage = (file: string, alt: string, size = 40) =>
+  `<img src="${iconUrl(file)}" width="${size}" height="${size}" alt="${htmlEscape(alt)}" style="display:block;width:${size}px;height:${size}px;border:0;border-radius:${Math.round(size * 0.2)}px;"/>`;
+
+const hero = (iconFile: string, iconAlt: string, headingHtml: string, subheadingHtml: string, accent = GOLD) => `<div style="background:${NAVY};padding:22px 34px 46px;text-align:center;border-radius:10px 10px 0 0;">
   ${brandLine()}
-  <div style="width:76px;height:76px;border-radius:50%;background:#ffffff;margin:0 auto 26px;color:${GOLD};font-size:34px;line-height:76px;text-align:center;">${icon}</div>
+  <div style="width:76px;height:76px;margin:0 auto 26px;">${iconImage(iconFile, iconAlt, 76)}</div>
   <h1 style="color:#ffffff;font-size:34px;line-height:1.18;margin:0 0 12px;font-weight:900;">${headingHtml}</h1>
   <p style="color:${GOLD};font-size:18px;line-height:1.45;margin:0;">${subheadingHtml}</p>
 </div>
 <div style="height:4px;background:${accent};line-height:4px;font-size:4px;">&nbsp;</div>`;
 
-const compactHero = (icon: string, headingHtml: string, subheadingHtml: string, accent = GREEN) => `<div style="background:${NAVY};padding:22px 34px 34px;text-align:center;border-radius:10px 10px 0 0;">
+const compactHero = (iconFile: string, iconAlt: string, headingHtml: string, subheadingHtml: string, accent = GREEN) => `<div style="background:${NAVY};padding:22px 34px 34px;text-align:center;border-radius:10px 10px 0 0;">
   ${brandLine()}
-  <div style="width:58px;height:58px;border-radius:50%;background:#ffffff;margin:0 auto 20px;color:${accent};font-size:28px;line-height:58px;text-align:center;">${icon}</div>
+  <div style="width:58px;height:58px;margin:0 auto 20px;">${iconImage(iconFile, iconAlt, 58)}</div>
   <h1 style="color:#ffffff;font-size:28px;line-height:1.22;margin:0 0 10px;font-weight:900;">${headingHtml}</h1>
   <p style="color:${GOLD};font-size:16px;line-height:1.45;margin:0;">${subheadingHtml}</p>
 </div>
@@ -135,7 +141,7 @@ const detailTable = (rows: DetailRow[]) => `<table role="presentation" cellpaddi
         <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
           <tr>
             <td width="58" valign="top" style="width:58px;">
-              <div style="width:40px;height:40px;border-radius:9px;background:${row.iconBg || NAVY};color:#ffffff;font-size:12px;font-weight:900;letter-spacing:0.4px;line-height:40px;text-align:center;">${row.icon}</div>
+              ${iconImage(row.iconFile, row.iconAlt)}
             </td>
             <td valign="top" style="padding-left:8px;">
               <div style="color:#8A93A3;font-size:12px;letter-spacing:1.2px;font-weight:900;text-transform:uppercase;line-height:1.2;margin:1px 0 4px;">${row.label}</div>
@@ -148,34 +154,38 @@ const detailTable = (rows: DetailRow[]) => `<table role="presentation" cellpaddi
     .join("")}
 </table>`;
 
-const scheduleRows = (bondzy: BondzyEmailRow, finalLabel: string, finalIcon: string, finalIconBg = GOLD): DetailRow[] => [
+const scheduleRows = (bondzy: BondzyEmailRow, finalLabel: string, finalIconFile: string, finalIconAlt: string): DetailRow[] => [
   {
-    icon: "GO",
+    iconFile: "location.png",
+    iconAlt: "Location",
     label: "Go to",
     valueHtml: htmlEscape(locationLabel(bondzy)),
   },
   {
-    icon: "ON",
+    iconFile: "calendar.png",
+    iconAlt: "Calendar",
     label: "When",
     valueHtml: `${htmlEscape(dateLabel(bondzy))} at ${htmlEscape(timeLabel(bondzy))}`,
   },
   {
-    icon: "+/-",
+    iconFile: "clock.png",
+    iconAlt: "Grace period",
     label: "Grace period",
     valueHtml: htmlEscape(graceLabel(bondzy)),
   },
   {
-    icon: finalIcon,
+    iconFile: finalIconFile,
+    iconAlt: finalIconAlt,
     label: finalLabel,
     valueHtml: htmlEscape(rewardLabel(bondzy)),
-    iconBg: finalIconBg,
     highlight: true,
   },
 ];
 
 const creatorRows = (bondzy: BondzyEmailRow): DetailRow[] => [
   {
-    icon: "TO",
+    iconFile: "recipient.png",
+    iconAlt: "Recipient",
     label: "Recipient",
     valueHtml: htmlEscape(
       `${bondzy.recipient_name || "Recipient"}${bondzy.recipient_email ? ` (${bondzy.recipient_email})` : ""}`,
@@ -184,7 +194,8 @@ const creatorRows = (bondzy: BondzyEmailRow): DetailRow[] => [
   ...scheduleRows(
     bondzy,
     bondzy.type === "promise" ? "Penalty" : "Reward",
-    bondzy.type === "promise" ? "PEN" : "RWD",
+    bondzy.type === "promise" ? "promise.png" : "reward.png",
+    bondzy.type === "promise" ? "Penalty" : "Reward",
   ),
 ];
 
@@ -227,13 +238,14 @@ export function buildCreationMessage(
     const details = isPromise
       ? detailTable([
           {
-            icon: "BY",
+            iconFile: "recipient.png",
+            iconAlt: "Commitment by",
             label: "Commitment by",
             valueHtml: safeCreator,
           },
-          ...scheduleRows(bondzy, "Penalty if missed", "PEN"),
+          ...scheduleRows(bondzy, "Penalty if missed", "promise.png", "Penalty"),
         ])
-      : detailTable(scheduleRows(bondzy, "Your reward", "RWD"));
+      : detailTable(scheduleRows(bondzy, "Your reward", "reward.png", "Reward"));
 
     return {
       to: [{ email: bondzy.recipient_email || "", name: bondzy.recipient_name || undefined }],
@@ -249,7 +261,7 @@ ${isPromise ? "Penalty" : "Reward"}: ${rewardLabel(bondzy)}
 
 Open Bondzy: ${bondzyUrl}`,
       htmlContent: emailShell(
-        `${hero(isPromise ? "&#129309;" : "&#127873;", heading, subheading)}
+        `${hero(isPromise ? "promise.png" : "reward.png", isPromise ? "Promise" : "Reward", heading, subheading)}
         ${contentSection(
           `<h2 style="color:${TEXT};font-size:24px;line-height:1.25;margin:0 0 12px;font-weight:900;">Hi ${safeRecipient}! &#128075;</h2>
           <p style="color:${MUTED};font-size:16px;line-height:1.55;margin:0;">${htmlEscape(intro)}</p>
@@ -277,7 +289,8 @@ ${isPromise ? "Penalty" : "Reward"}: ${rewardLabel(bondzy)}
 View Dashboard: https://app.bondzy.com`,
     htmlContent: emailShell(
       `${compactHero(
-        isPromise ? "&#129309;" : "&#127873;",
+        isPromise ? "promise.png" : "reward.png",
+        isPromise ? "Promise" : "Reward",
         htmlEscape(subject),
         `Your Bondzy for ${safeTarget} is active.`,
         GREEN,
@@ -298,20 +311,22 @@ export function buildRedemptionMessage(
   const redeemedAt = bondzy.redeemed_at ? new Date(bondzy.redeemed_at).toLocaleString("en-US") : "just now";
   const actionRows = (label: string): DetailRow[] => [
     {
-      icon: "GO",
+      iconFile: "location.png",
+      iconAlt: "Location",
       label: "Location",
       valueHtml: htmlEscape(locationLabel(bondzy)),
     },
     {
-      icon: "ON",
+      iconFile: "calendar.png",
+      iconAlt: "Scheduled",
       label: "Scheduled",
       valueHtml: `${htmlEscape(dateLabel(bondzy))} at ${htmlEscape(timeLabel(bondzy))}`,
     },
     {
-      icon: "OK",
+      iconFile: "success.png",
+      iconAlt: "Success",
       label,
       valueHtml: htmlEscape(redeemedAt),
-      iconBg: GREEN,
       highlight: true,
     },
   ];
@@ -332,7 +347,7 @@ Checked in: ${redeemedAt}
 
 The commitment was honored. No penalty triggered.`,
       htmlContent: emailShell(
-        `${compactHero("&#10003;", `${safeCreator} kept their promise`, "The commitment was honored. No penalty triggered.", GREEN)}
+        `${compactHero("success.png", "Success", `${safeCreator} kept their promise`, "The commitment was honored. No penalty triggered.", GREEN)}
         ${contentSection(
           `<p style="color:${MUTED};font-size:16px;line-height:1.55;margin:0;">Good news: ${safeCreator} checked in on time.</p>
           ${detailTable(actionRows("Checked in"))}`,
@@ -354,14 +369,14 @@ Reward: ${rewardLabel(bondzy)}
 
 View Dashboard: https://app.bondzy.com`,
     htmlContent: emailShell(
-      `${compactHero("&#10003;", `${safeRecipient} claimed your Bondzy`, "They showed up and claimed the reward.", GREEN)}
+      `${compactHero("success.png", "Success", `${safeRecipient} claimed your Bondzy`, "They showed up and claimed the reward.", GREEN)}
       ${contentSection(
         `<p style="color:${MUTED};font-size:16px;line-height:1.55;margin:0;">Success: ${safeRecipient} redeemed their Bondzy reward.</p>
         ${detailTable([...actionRows("Claimed"), {
-          icon: "RWD",
+          iconFile: "reward.png",
+          iconAlt: "Reward",
           label: "Reward",
           valueHtml: htmlEscape(rewardLabel(bondzy)),
-          iconBg: GOLD,
           highlight: true,
         }])}
         ${ctaButton("https://app.bondzy.com", "View Dashboard", "navy")}`,
