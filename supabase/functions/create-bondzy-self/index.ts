@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendCreationEmails, type BondzyType } from "../_shared/bondzy-email.ts";
+import { checkRateLimit } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -86,6 +87,12 @@ Deno.serve(async (req: Request) => {
   const { data: userData, error: userError } = await supabase.auth.getUser(jwt);
   if (userError || !userData?.user) return json({ error: "Authentication required" }, 401);
   const user = userData.user;
+
+  if (!await checkRateLimit(supabase, `create-self:${user.id}`, 40)) {
+    console.warn(`Rate limit exceeded: create-bondzy-self for ${user.id}`);
+    return json({ error: "Too many requests. Please try again later." }, 429);
+  }
+
   const creatorEmail = (user.email || "").toLowerCase();
 
   const { data: profile } = await supabase

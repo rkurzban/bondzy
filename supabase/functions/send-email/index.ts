@@ -4,6 +4,7 @@ import {
   type CreationEventType,
   sendBrevoMessage,
 } from "../_shared/bondzy-email.ts";
+import { checkRateLimit } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -53,6 +54,11 @@ Deno.serve(async (req: Request) => {
 
   const { data: userData, error: userError } = await supabase.auth.getUser(jwt);
   if (userError || !userData?.user) return json({ error: "Authentication required" }, 401);
+
+  if (!await checkRateLimit(supabase, `send-email:${userData.user.id}`, 20)) {
+    console.warn(`Rate limit exceeded: send-email for ${userData.user.id}`);
+    return json({ error: "Too many requests. Please try again later." }, 429);
+  }
 
   const { data: bondzy, error: bondzyError } = await supabase
     .from("bondzies")

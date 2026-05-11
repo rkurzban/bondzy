@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { buildRedemptionMessage, sendBrevoMessage } from "../_shared/bondzy-email.ts";
+import { checkRateLimit } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -160,6 +161,11 @@ Deno.serve(async (req: Request) => {
 
     bondzyId = claim.bondzy_id;
     hasValidClaimToken = true;
+  }
+
+  if (!await checkRateLimit(supabase, `redeem:${bondzyId}`, 20)) {
+    console.warn(`Rate limit exceeded: redeem-bondzy for bondzy ${bondzyId}`);
+    return json({ error: "Too many requests. Please try again later." }, 429);
   }
 
   const { data: bondzyData, error: bondzyError } = await supabase

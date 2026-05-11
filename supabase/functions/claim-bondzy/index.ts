@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -88,6 +89,12 @@ Deno.serve(async (req: Request) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false },
   });
+
+  const rlKey = claimToken || bondzyId;
+  if (!await checkRateLimit(supabase, `claim:${rlKey}`, 120)) {
+    console.warn(`Rate limit exceeded: claim-bondzy for ${rlKey}`);
+    return json({ error: "Too many requests. Please try again later." }, 429);
+  }
 
   if (claimToken) {
     const { data: claim, error: claimError } = await supabase
