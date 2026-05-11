@@ -1,5 +1,9 @@
 # Bondzy Email Icon Prompts
 
+Status: generated and installed in `public/email-icons/`.
+
+The email templates reference these assets with absolute URLs such as `https://app.bondzy.com/email-icons/location.png`. When replacing or adding icons, deploy the frontend first so the image URLs exist, then redeploy the Edge Functions that render email HTML.
+
 Create these as a matched set of square PNG icons. Use 160 x 160 px. Use a clean flat vector-style email icon tile for Bondzy: dark navy rounded-square background (#1B2A4A), centered simple symbol in warm gold (#D4A843) and white, modern friendly polished app style, high contrast, no text, no letters, no watermark, no heavy 3D shadows, no photorealism, no gradients, no extra objects. Each icon must remain clear when displayed at 40 x 40 px in an email.
 
 recipient.png - A friendly recipient/person symbol, simple bust or user silhouette, centered. Use white for the face/body shape with a small warm gold accent. No gendered details, no facial features, no text.

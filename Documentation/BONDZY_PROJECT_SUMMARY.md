@@ -90,6 +90,7 @@ bondzies table:
 
 ### Security
 - Row Level Security (RLS) enabled on all tables
+- Profile RLS includes a `can_read_bondzy_profile()` helper so dashboard/profile lookups do not recursively break Bondzy visibility
 - Environment variables for all API keys
 - Brevo API key stored as Supabase `BREVO_API_KEY` Edge Function secret, not bundled into browser code
 - HTTPS everywhere (Vercel + custom domain)
@@ -119,6 +120,7 @@ bondzies table:
 - Creator confirmation email on creation
 - Creator notified when recipient claims (reward) or checks in (promise)
 - Recipient notified when creator keeps their promise
+- Email detail icons use hosted PNG assets in `public/email-icons/` so Gmail and other email clients render them consistently instead of substituting inconsistent emoji glyphs
 - **Reward Bondzy recipient email** uses a full-brand HTML template: navy hero with white gift circle, gold accent bar, structured detail rows (table-based for email compatibility), warm gold reward row highlight, and "Claim My Reward →" CTA
 - All email headers include the Bondzy logo mark + wordmark
 - Consistent copy: "Show up on time for your appointment to claim your reward."
