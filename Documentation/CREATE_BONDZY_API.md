@@ -27,6 +27,8 @@ The Edge Function (`supabase/functions/create-bondzy/index.ts`) does the followi
 - Authenticated the CLI with `supabase login`
 - Linked the CLI to the Bondzy Supabase project (`supabase link --project-ref wbbkutufcmrxjdbmhgbv`)
 - Set two secrets in the Supabase dashboard: `BONDZY_API_KEY` and `BREVO_API_KEY` (the `SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_URL` are injected automatically by Supabase)
+- `BONDZY_API_KEY` is a random shared password for this endpoint. It is not the Brevo key, Google Places key, Supabase anon key, or Supabase service-role key.
+- `BREVO_API_KEY` must come from Brevo's **API keys & MCP** tab and should start with `xkeysib-`. Do not use an SMTP key that starts with `xsmtpsib-`.
 - Deployed with `supabase functions deploy create-bondzy --no-verify-jwt`
 
 ---
@@ -42,6 +44,8 @@ POST https://wbbkutufcmrxjdbmhgbv.supabase.co/functions/v1/create-bondzy
 ### Authentication
 
 Every request must include an `x-api-key` header containing the `BONDZY_API_KEY` secret. Requests without it, or with the wrong key, receive a `401 Unauthorized` response.
+
+This is separate from `BREVO_API_KEY`. `BONDZY_API_KEY` only authenticates external callers to this Bondzy endpoint; it does not send email.
 
 ```
 x-api-key: <your BONDZY_API_KEY>

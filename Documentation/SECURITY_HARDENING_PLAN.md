@@ -11,7 +11,9 @@ This hardening pass closes the highest-risk gaps after Phase 1 reward secrecy an
 - The browser no longer marks expired Bondzies as `forfeit`; server cron owns that transition.
 - Promise penalty values are moved into `bondzy_secrets` and cleared from `bondzies.reward_link`.
 - RLS policies are version-controlled in a migration.
+- Profile RLS uses `can_read_bondzy_profile()` to avoid recursive dashboard/profile joins.
 - An RLS smoke-test script verifies anon, creator, recipient, and unrelated-user access.
+- Branded email icons are hosted PNG assets, not client-provided HTML or email-client emoji rendering.
 
 ## Files
 
@@ -22,6 +24,8 @@ This hardening pass closes the highest-risk gaps after Phase 1 reward secrecy an
 - `supabase/functions/claim-bondzy/index.ts`
 - `supabase/migrations/20260510_promise_penalty_secrets.sql`
 - `supabase/migrations/20260510_rls_policies.sql`
+- `supabase/migrations/20260510_fix_profile_rls_recursion.sql`
+- `public/email-icons/*.png`
 - `src/App.jsx`
 - `scripts/rls-smoke-test.js`
 
@@ -35,6 +39,7 @@ Run these after Phase 1 and Phase 2 are already deployed.
    -- Run the contents of:
    -- supabase/migrations/20260510_promise_penalty_secrets.sql
    -- supabase/migrations/20260510_rls_policies.sql
+   -- supabase/migrations/20260510_fix_profile_rls_recursion.sql
    ```
 
 2. Confirm server-side forfeit cron exists.
@@ -64,6 +69,8 @@ Run these after Phase 1 and Phase 2 are already deployed.
    git push
    ```
 
+   If email icon assets changed, wait for the Vercel frontend deployment to finish before redeploying email Edge Functions, because the email HTML references `https://app.bondzy.com/email-icons/*.png`.
+
 5. Rotate the Brevo API key after the functions and frontend are live.
 
    Update the Supabase `BREVO_API_KEY` Edge Function secret with the new key.
@@ -72,6 +79,7 @@ Run these after Phase 1 and Phase 2 are already deployed.
 
 1. Create a Reward Bondzy from the web app.
 2. Confirm recipient and creator emails arrive and use a `?claim=` link.
+   The email detail rows should use PNG icons loaded from `https://app.bondzy.com/email-icons/`.
 3. Confirm browser dev tools do not show raw HTML email payloads being sent from the client.
 4. Redeem a Reward Bondzy and confirm the creator gets the redemption email.
 5. Create a Promise Bondzy, check in as creator, and confirm the recipient gets the Promise-kept email.
@@ -102,6 +110,9 @@ Run these after Phase 1 and Phase 2 are already deployed.
 - `VITE_BREVO_API_KEY` must not exist in Vercel environment variables.
 - `VITE_BREVO_API_KEY` must not appear in source code.
 - Brevo key rotation should happen after the hardened email functions are deployed.
+- `BREVO_API_KEY` must be a Brevo REST API key from the "API keys & MCP" tab and should start with `xkeysib-`.
+- Do not use a Brevo SMTP key that starts with `xsmtpsib-` for `BREVO_API_KEY`; it will fail with `401 Key not found`.
+- `BONDZY_API_KEY` is a separate random shared secret for the external `create-bondzy` API. It is not a Brevo, Google, Supabase anon, or Supabase service-role key.
 
 ## Follow-Up
 

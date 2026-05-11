@@ -1,7 +1,7 @@
 # Bondzy Development Guide
 ## Where We Are and What's Next
 
-*Last updated: May 8, 2026*
+*Last updated: May 10, 2026*
 
 ---
 
@@ -24,6 +24,8 @@
 | URL sharing / Copy Link | Each Bondzy has a shareable link; recipients don't need an account to view |
 | Brevo API key security | Brevo key rotated and stored as the Supabase `BREVO_API_KEY` Edge Function secret |
 | Claim token links | Shared links use private `?claim=` tokens instead of public database ids |
+| Server-side forfeit cron | Supabase cron owns expired Bondzy forfeits; browser code no longer writes forfeits |
+| Email icon assets | Hosted PNG email icons live in `public/email-icons/` and render consistently in Gmail |
 | app.bondzy.com | App now lives at app.bondzy.com, separate from the www.bondzy.com marketing site |
 | www.bondzy.com footer link | Small tasteful link to the marketing site in the app footer |
 
@@ -33,45 +35,19 @@
 
 ---
 
-### 1. Server-Side Forfeit Logic ⏰
-**Status:** Partial. The app detects expired Bondzies on the client side (`isExpiredClient` in App.jsx) but does **not** update the database. A Bondzy that passes its time window stays `active` in Supabase until something triggers a status change.
+### 1. Server-Side Forfeit Logic
+**Status:** Complete. Supabase cron owns the expired-to-forfeit transition. The browser may display an active-but-expired Bondzy as expired for UI purposes, but it does not write `status = "forfeit"` to the database.
 
-**Why it matters:** Without this, expired Bondzies accumulate as "active" in the database. Reports, filters, and any future features that query status will be inaccurate.
-
-**How to build it (Supabase Cron Job):**
-
-1. Enable `pg_cron` in Supabase: Database → Extensions → search `pg_cron` → enable.
-
-2. Run this SQL in the SQL Editor:
-
+**To verify:** Go to Supabase SQL Editor and run:
 ```sql
-create or replace function public.forfeit_expired_bondzies()
-returns void as $$
-begin
-  update public.bondzies
-  set status = 'forfeit'
-  where status = 'active'
-  and (date + time + (grace_minutes || ' minutes')::interval) < now();
-end;
-$$ language plpgsql security definer;
-
-select cron.schedule(
-  'forfeit-expired-bondzies',
-  '*/5 * * * *',
-  'select public.forfeit_expired_bondzies()'
-);
+select * from cron.job where jobname = 'forfeit-expired-bondzies';
 ```
 
-Every 5 minutes, Supabase marks expired Bondzies as forfeit. No external services needed.
-
-**To verify:** Go to Supabase → SQL Editor and run:
-```sql
-select * from cron.job;
-```
+You should see one row.
 
 ---
 
-### 2. Domain Consolidation 🌐
+### 2. Domain Consolidation
 **Status:** The app is at `app.bondzy.com`. The marketing site (`www.bondzy.com`) is still on Wix. These are currently two separate things, which is fine for now.
 
 **Decision to make:** Do you want to eventually migrate the Wix marketing site content into the React app and serve everything from one place? Or keep them permanently separate (Wix for marketing, app.bondzy.com for the app)?
@@ -132,8 +108,8 @@ Set server-only secrets in Supabase Edge Function secrets, not in Vercel and not
 
 | Secret | Where to find it |
 |----------|-----------------|
-| `BREVO_API_KEY` | Brevo → Settings → SMTP & API → API keys tab |
-| `BONDZY_API_KEY` | Internal shared secret for the `create-bondzy` API |
+| `BREVO_API_KEY` | Brevo -> Settings -> SMTP & API -> API keys & MCP tab. Must start with `xkeysib-`; do not use an SMTP key that starts with `xsmtpsib-`. |
+| `BONDZY_API_KEY` | Internal shared secret for the `create-bondzy` API. This is a random shared password, not a Google, Brevo, or Supabase key. |
 
 ### Deploy Workflow
 
@@ -144,6 +120,17 @@ git push
 ```
 
 Vercel auto-deploys within ~60 seconds. Test locally first with `npm run dev`.
+
+Supabase Edge Functions are deployed separately:
+
+```powershell
+supabase functions deploy create-bondzy-self --no-verify-jwt
+supabase functions deploy create-bondzy --no-verify-jwt
+supabase functions deploy send-email --no-verify-jwt
+supabase functions deploy redeem-bondzy --no-verify-jwt
+```
+
+When email icon assets change, deploy the frontend first so `https://app.bondzy.com/email-icons/*.png` exists, then deploy the Edge Functions that reference those assets.
 
 ### Database Schema
 

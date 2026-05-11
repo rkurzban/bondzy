@@ -44,7 +44,7 @@ const BONDZY = {
 
   // What's at stake?
   rewardDescription: "I owe you a pottery class session if I don't show!",
-  rewardLink: "", // Required private URL/code/text (e.g. PayPal link, gift card code)
+  rewardLink: "www.example.com", // Required private URL/code/text (e.g. PayPal link, gift card code)
 };
 
 // Set to false to skip sending emails (useful for testing)
