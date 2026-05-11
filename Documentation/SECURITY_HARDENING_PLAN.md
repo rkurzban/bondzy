@@ -105,6 +105,6 @@ Run these after Phase 1 and Phase 2 are already deployed.
 
 ## Follow-Up
 
-- Add rate limiting to `send-email`, `claim-bondzy`, `redeem-bondzy`, and creation functions.
+- ~~Add rate limiting to `send-email`, `claim-bondzy`, `redeem-bondzy`, and creation functions.~~ **Done May 11, 2026** — see `supabase/migrations/20260511_rate_limiting.sql` and `supabase/functions/_shared/rate-limit.ts`. Limits (per 1-hour window): `create-bondzy` 120/hr per creator_email, `create-bondzy-self` 40/hr per user, `redeem-bondzy` 20/hr per bondzy, `claim-bondzy` 120/hr per claim_token, `send-email` 20/hr per user. Returns `429` + `console.warn` on limit hit.
 - Add legacy `?bondzy=` usage logging before removing the signed-in handler.
 - Backfill the complete production schema into migrations so this repo is the durable source of truth.
