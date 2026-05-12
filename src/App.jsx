@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "./supabase";
-
-const B = {
-  navy:"#1B2A4A",navyL:"#243A5E",gold:"#D4A843",goldL:"#F2E6C5",goldD:"#B8912E",
-  wh:"#FFFFFF",off:"#F5F6F8",grn:"#2E8B57",grnL:"#E8F5EE",red:"#C0392B",redL:"#FDECEB",
-  blu:"#3B82F6",bluL:"#EBF4FF",gry:"#8E99A4",gryL:"#E8ECF0",gryD:"#5A6570",bdr:"#DDE1E6",
-};
+import { B } from "./theme";
+import { Ic } from "./components/icons";
+import { Header } from "./components/Header";
+import { AuthForm } from "./components/AuthForm";
+import { Help } from "./components/Help";
+import { Profile } from "./components/Profile";
 
 const GKEY = import.meta.env.VITE_GOOGLE_PLACES_KEY;
 
@@ -59,32 +59,6 @@ const getPlaceDetails = async (placeId) => {
   } catch (e) { console.error("Place details error:", e); return null; }
 };
 
-const Ic = ({name,size=20,color="currentColor"}) => {
-  const d = {
-    plus:<path d="M12 5v14M5 12h14" strokeWidth="2" strokeLinecap="round"/>,
-    gift:<><path d="M20 12v10H4V12" strokeWidth="2"/><path d="M2 7h20v5H2z" strokeWidth="2"/><path d="M12 22V7" strokeWidth="2"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z" strokeWidth="2"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" strokeWidth="2"/></>,
-    pin:<><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" strokeWidth="2"/><circle cx="12" cy="10" r="3" strokeWidth="2"/></>,
-    clock:<><circle cx="12" cy="12" r="10" strokeWidth="2"/><path d="M12 6v6l4 2" strokeWidth="2" strokeLinecap="round"/></>,
-    check:<path d="M20 6L9 17l-5-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
-    x:<><path d="M18 6L6 18" strokeWidth="2" strokeLinecap="round"/><path d="M6 6l12 12" strokeWidth="2" strokeLinecap="round"/></>,
-    send:<><path d="M22 2L11 13" strokeWidth="2" strokeLinecap="round"/><path d="M22 2L15 22l-4-9-9-4z" strokeWidth="2" strokeLinejoin="round"/></>,
-    home:<><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" strokeWidth="2"/><path d="M9 22V12h6v10" strokeWidth="2"/></>,
-    user:<><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" strokeWidth="2"/><circle cx="12" cy="7" r="4" strokeWidth="2"/></>,
-    nav:<polygon points="3 11 22 2 13 21 11 13 3 11" strokeWidth="2" strokeLinejoin="round"/>,
-    back:<path d="M19 12H5M12 19l-7-7 7-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
-    search:<><circle cx="11" cy="11" r="8" strokeWidth="2"/><path d="M21 21l-4.35-4.35" strokeWidth="2" strokeLinecap="round"/></>,
-    help:<><circle cx="12" cy="12" r="10" strokeWidth="2"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" strokeWidth="2" strokeLinecap="round"/><path d="M12 17h.01" strokeWidth="2" strokeLinecap="round"/></>,
-    zap:<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" strokeWidth="2" strokeLinejoin="round"/>,
-    copy:<><rect x="9" y="9" width="13" height="13" rx="2" ry="2" strokeWidth="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" strokeWidth="2"/></>,
-    chev:<path d="M6 9l6 6 6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
-    logout:<><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" strokeWidth="2"/><polyline points="16 17 21 12 16 7" strokeWidth="2"/><line x1="21" y1="12" x2="9" y2="12" strokeWidth="2"/></>,
-    mail:<><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" strokeWidth="2"/><path d="M22 6l-10 7L2 6" strokeWidth="2" strokeLinecap="round"/></>,
-    shield:<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
-    trash:<><polyline points="3 6 5 6 21 6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" strokeWidth="2"/><path d="M10 11v6M14 11v6" strokeWidth="2" strokeLinecap="round"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" strokeWidth="2"/></>,
-  };
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} xmlns="http://www.w3.org/2000/svg">{d[name]}</svg>;
-};
-
 // Styles
 const fl=document.createElement("link");fl.href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap";fl.rel="stylesheet";document.head.appendChild(fl);
 const gs=document.createElement("style");
@@ -105,82 +79,6 @@ const getClaimToken=async(bondzyId)=>{
   const{data,error}=await supabase.rpc("get_bondzy_claim_token",{p_bondzy_id:bondzyId});
   if(error){console.error("Claim token lookup failed:",error);return null;}
   return data||null;
-};
-
-// ========== LOGO MARK ==========
-const BondzyMark = ({size=26}) => (
-  <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Location pin head */}
-    <path d="M54,38 Q41,33 41,19 A13,13 0 0,1 67,19 Q67,33 54,38Z" fill="#D4A843"/>
-    {/* Clock face */}
-    <circle cx="54" cy="19" r="8" fill="white"/>
-    {/* Clock hands */}
-    <line x1="54" y1="19" x2="49" y2="13" stroke="#D4A843" strokeWidth="2" strokeLinecap="round"/>
-    <line x1="54" y1="19" x2="59" y2="22" stroke="#D4A843" strokeWidth="2" strokeLinecap="round"/>
-    {/* Torso */}
-    <line x1="53" y1="38" x2="49" y2="65" stroke="#D4A843" strokeWidth="12" strokeLinecap="round"/>
-    {/* Rear arm (back-left) */}
-    <line x1="51" y1="51" x2="24" y2="61" stroke="#D4A843" strokeWidth="10" strokeLinecap="round"/>
-    {/* Front arm (forward-right) */}
-    <line x1="53" y1="48" x2="77" y2="37" stroke="#D4A843" strokeWidth="10" strokeLinecap="round"/>
-    {/* Front leg upper */}
-    <line x1="45" y1="65" x2="34" y2="79" stroke="#D4A843" strokeWidth="10" strokeLinecap="round"/>
-    {/* Front leg lower / foot */}
-    <line x1="34" y1="79" x2="21" y2="87" stroke="#D4A843" strokeWidth="10" strokeLinecap="round"/>
-    {/* Rear leg */}
-    <line x1="52" y1="65" x2="68" y2="88" stroke="#D4A843" strokeWidth="10" strokeLinecap="round"/>
-  </svg>
-);
-
-// ========== HEADER ==========
-const Header = ({page,onNav,email}) => (
-  <div style={{background:B.navy,padding:"0 20px",position:"sticky",top:0,zIndex:100,boxShadow:"0 2px 10px rgba(0,0,0,0.15)"}}>
-    <div style={{maxWidth:900,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",height:56}}>
-      <div onClick={()=>onNav(email?"dashboard":"landing")} style={{cursor:"pointer",display:"flex",alignItems:"center",gap:8}}>
-        <img src="/bondzymarkv2.png" alt="Bondzy" style={{width:28,height:28,objectFit:"contain"}}/>
-        <span style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:B.wh}}>Bondzy</span>
-      </div>
-      {email&&<div style={{display:"flex",alignItems:"center",gap:4}}>
-        {[{k:"dashboard",ic:"home",l:"My Bondzies"},{k:"create-reward",ic:"plus",l:"Create"},{k:"help",ic:"help",l:"Help"},{k:"profile",ic:"user",l:""}].map(t=>(
-          <button key={t.k} onClick={()=>onNav(t.k)} style={{background:page===t.k||(page==="create"&&t.k==="create-reward")?"rgba(255,255,255,0.15)":"transparent",border:"none",borderRadius:8,padding:t.l?"6px 12px":"6px 8px",cursor:"pointer",display:"flex",alignItems:"center",gap:5,color:B.wh,fontSize:13,fontWeight:600}}>
-            <Ic name={t.ic} size={15} color={page===t.k||(page==="create"&&t.k==="create-reward")?B.gold:"rgba(255,255,255,0.7)"}/>{t.l&&<span style={{opacity:page===t.k||(page==="create"&&t.k==="create-reward")?1:0.8}}>{t.l}</span>}
-          </button>
-        ))}
-      </div>}
-    </div>
-  </div>
-);
-
-// ========== AUTH FORM (shared between hero + bottom CTA) ==========
-const AuthForm=({email,setEmail,sent,setSent,loading,err,go,signInWithGoogle})=>{
-  if(sent)return(
-    <div style={{maxWidth:420,margin:"0 auto",background:"rgba(255,255,255,0.1)",borderRadius:12,padding:24,animation:"fadeIn 0.3s ease",textAlign:"center"}}>
-      <div style={{fontSize:32,marginBottom:12}}>📧</div>
-      <h2 style={{fontSize:20,marginBottom:8,color:"white"}}>Check your email!</h2>
-      <p style={{fontSize:15,opacity:0.85,lineHeight:1.6,color:"white"}}>We sent a magic link to <strong>{email}</strong>. Click it to sign in.</p>
-      <p style={{fontSize:13,opacity:0.6,marginTop:12,color:"white"}}>Don't see it? Check your spam folder.</p>
-      <button onClick={()=>setSent(false)} className="btn bo" style={{marginTop:16,borderColor:"rgba(255,255,255,0.3)",color:"white"}}>Try a different email</button>
-    </div>
-  );
-  return(
-    <div style={{maxWidth:420,margin:"0 auto"}}>
-      <button onClick={signInWithGoogle} style={{width:"100%",background:"white",color:"#1f1f1f",border:"none",borderRadius:8,padding:"12px 24px",fontSize:15,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:10,marginBottom:10,transition:"all 0.2s"}} onMouseOver={e=>e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,0.2)"} onMouseOut={e=>e.currentTarget.style.boxShadow="none"}>
-        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
-        Continue with Google
-      </button>
-      <p style={{fontSize:12,opacity:0.6,marginBottom:14,color:"white",textAlign:"center"}}>Frequent user? →</p>
-      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-        <div style={{flex:1,height:1,background:"rgba(255,255,255,0.2)"}}/>
-        <span style={{fontSize:13,opacity:0.5,color:"white"}}>or use email</span>
-        <div style={{flex:1,height:1,background:"rgba(255,255,255,0.2)"}}/>
-      </div>
-      <div style={{display:"flex",gap:10,flexWrap:"wrap",justifyContent:"center"}}>
-        <input type="email" placeholder="your@email.com" value={email} onChange={e=>{setEmail(e.target.value);}} onKeyDown={e=>e.key==="Enter"&&go()} className="inp" style={{flex:1,minWidth:210,textAlign:"center",borderColor:"rgba(255,255,255,0.25)",background:"rgba(255,255,255,0.1)",color:"white"}}/>
-        <button onClick={go} className="btn bg" style={{minWidth:130}} disabled={loading}>{loading?"Sending...":"Get Started →"}</button>
-      </div>
-      {err&&<p style={{color:"#ff8080",fontSize:13,marginTop:8,textAlign:"center"}}>{err}</p>}
-    </div>
-  );
 };
 
 // ========== LANDING PAGE ==========
@@ -352,54 +250,6 @@ const AuthPage=()=>{
 };
 
 // ========== HELP ==========
-const Help = () => {
-  const [oi,setOi]=useState(null);
-  const faqs=[
-    {q:"What are Bondzies?",a:"A Reward Bondzy lets you bury a treasure — a link to a reward — that someone can only claim by being at a specific place at a specific time."},
-    {q:"How do Reward Bondzies work?",a:"You specify WHO, WHERE, WHEN, and WHAT (a reward link). We email the recipient. If they show up and verify GPS, they get the reward!"},
-    {q:"Does the recipient need an account?",a:"For Reward Bondzies — no. Recipients click the link in their email and go straight to the Bondzy. No sign-up, no password. For Promise Bondzies, recipients need an account to monitor the creator's check-in status."},
-    {q:"What can I use as a reward?",a:"Anything of value! PayPal or Venmo links, digital gift card URLs, promo codes, passwords to a download — get creative. If it's a link, the recipient gets a clickable button. If it's a code or text, they get a copy button."},
-    {q:"What happens if they don't show up?",a:"The reward goes unclaimed and the Bondzy is marked as forfeit."},
-    {q:"How does GPS verification work?",a:"When the time window opens, the app automatically checks your GPS. You need to be within about 100 meters (~330 feet) of the target location. For Reward Bondzies, the recipient verifies. For Promise Bondzies, the creator verifies."},
-    {q:"What are Promise Bondzies?",a:"A Promise Bondzy is your commitment to be somewhere. You specify WHO, WHERE, WHEN, and a PENALTY. If you don't verify GPS at the location on time, the penalty link is automatically sent to the other person. Think of it like a bail bond — it makes your word credible."},
-    {q:"Is Bondzy free?",a:"During beta, yes! Receiving Bondzies will always be free."},
-  ];
-  return <div style={{maxWidth:650,margin:"0 auto",padding:"36px 20px 80px"}}>
-    <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,marginBottom:6}}>Help Center</h1>
-    <p style={{color:B.gryD,marginBottom:28,fontSize:15}}>Everything you need to know about Bondzy.</p>
-    <div style={{background:B.navy,borderRadius:12,padding:24,marginBottom:28,color:B.wh}}>
-      <h2 style={{fontSize:18,fontWeight:700,marginBottom:12,color:B.gold}}>Quick Overview</h2>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,fontSize:14,lineHeight:1.6}}>
-        <div><div style={{fontWeight:700,marginBottom:6}}>🎁 Reward Bondzy</div><div style={{opacity:0.85}}>Create a reward for someone. If they show up, they get it.</div></div>
-        <div><div style={{fontWeight:700,marginBottom:6}}>🤝 Promise Bondzy</div><div style={{opacity:0.85}}>Commit to being somewhere. If you don't show, they get the penalty.</div></div>
-      </div>
-    </div>
-    <h2 style={{fontSize:18,fontWeight:700,marginBottom:16}}>Frequently Asked Questions</h2>
-    {faqs.map((f,i)=>(
-      <div key={i} style={{background:B.wh,border:`1px solid ${B.bdr}`,borderRadius:10,marginBottom:8,overflow:"hidden"}}>
-        <button onClick={()=>setOi(oi===i?null:i)} style={{width:"100%",padding:"14px 16px",background:"none",border:"none",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",fontSize:15,fontWeight:600,color:B.navy,textAlign:"left"}}>
-          {f.q}<span style={{transform:oi===i?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s",flexShrink:0,marginLeft:8}}><Ic name="chev" size={18} color={B.gry}/></span>
-        </button>
-        {oi===i&&<div style={{padding:"0 16px 14px",fontSize:14,lineHeight:1.7,color:B.gryD,animation:"fadeIn 0.2s ease"}}>{f.a}</div>}
-      </div>
-    ))}
-    <div style={{marginTop:28,textAlign:"center"}}><p style={{fontSize:14,color:B.gryD,marginBottom:8}}>Still have questions?</p><a href="mailto:info@bondzy.com" style={{color:B.navy,fontWeight:600,fontSize:14}}>Email info@bondzy.com</a></div>
-  </div>;
-};
-
-// ========== PROFILE ==========
-const Profile = ({email,profile,onLogout}) => (
-  <div style={{maxWidth:500,margin:"0 auto",padding:"36px 20px 80px"}}>
-    <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,marginBottom:24}}>Profile</h1>
-    <div className="crd" style={{textAlign:"center",padding:32,marginBottom:16}}>
-      <div style={{width:64,height:64,borderRadius:"50%",background:B.navy,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px"}}><Ic name="user" size={28} color={B.gold}/></div>
-      <div style={{fontSize:18,fontWeight:700,marginBottom:4}}>{profile?.name||email.split("@")[0]}</div>
-      <div style={{fontSize:14,color:B.gryD}}>{email}</div>
-    </div>
-    <button onClick={onLogout} className="btn" style={{width:"100%",background:B.redL,color:B.red,fontWeight:700}}><Ic name="logout" size={16} color={B.red}/> Log Out</button>
-  </div>
-);
-
 // ========== DASHBOARD ==========
 const Dash = ({bondzies,email,userId,onNav,onView,filter,setFilter,tab,setTab,loading,onDelete}) => {
   const [now,setNow]=useState(Date.now());
