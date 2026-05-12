@@ -58,10 +58,12 @@ Traditional planning relies on trust and hope:
 ## Technical Architecture
 
 ### Frontend
-- **Framework:** React 18 (single-page application, ~1,250 lines)
+- **Framework:** React 18 (single-page application; `App.jsx` ~985 lines after leaf-component extraction, plus dedicated files for `Header`, `AuthForm`, `Help`, `Profile`, icons, and the color palette in `src/components/` and `src/theme.js`)
 - **Styling:** Inline styles + custom animations
 - **State Management:** React hooks (useState, useEffect, useMemo)
 - **Routing:** Client-side navigation (page state, no router library)
+- **Error tracking:** Sentry SDK + React `ErrorBoundary` wired into `src/main.jsx`; activates when `VITE_SENTRY_DSN` is set in the Vercel environment, otherwise tree-shaken out at build time
+- **Installable:** `public/manifest.json` + iOS/Android meta tags enable add-to-home-screen as a standalone PWA
 
 ### Backend
 - **Database:** Supabase (PostgreSQL)
@@ -177,9 +179,9 @@ bondzies table:
 
 ## Known Limitations / Tech Debt
 
-- App.jsx is a single ~1,250-line file (no component splitting yet)
-- `send-email` Edge Function is template-driven; remaining email work is rate limiting before scale
-- No TypeScript, no automated tests
+- `App.jsx` ~985 lines after leaf-component extraction (May 12, 2026); `Dash`, `Create`, `Detail`, and the main state container still live there and want further splitting
+- No TypeScript, no automated tests beyond an RLS smoke script
+- Sentry SDK is wired in but inactive in production until `VITE_SENTRY_DSN` is set in Vercel
 - No analytics / admin dashboard
 
 ---
@@ -210,8 +212,11 @@ bondzies table:
 
 ### Phase 3: Growth (In Progress)
 - ✅ Branding & email design — logo on all email headers and Bondzy detail view; richer Reward Bondzy recipient template; consistent copy
+- ✅ Security hardening — rate limiting, RLS policies, claim tokens, server-side email templates (May 2026)
+- ✅ PWA add-to-home-screen — manifest + iOS/Android meta tags (May 12, 2026)
+- ✅ Error tracking scaffold — Sentry + ErrorBoundary, opt-in via env var (May 12, 2026)
 - Analytics dashboard (redemption rate, forfeit rate, creator retention)
-- Mobile PWA (add-to-home-screen, push notifications)
+- Mobile PWA — push notifications + offline support (a2hs already shipped)
 - Social sharing ("I just claimed a Bondzy!")
 - Calendar integration (add to Google Calendar)
 - Group/multi-recipient Bondzies
@@ -233,5 +238,5 @@ Repository: github.com/rkurzban/bondzy
 
 ---
 
-**Last Updated:** April 18, 2026
-**Version:** 2.1 (Post-MVP, live)
+**Last Updated:** May 12, 2026
+**Version:** 2.2 (Post-MVP, live)
