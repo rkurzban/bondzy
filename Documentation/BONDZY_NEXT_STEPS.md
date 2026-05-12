@@ -1,5 +1,5 @@
 # Bondzy - Next Steps
-**Post-MVP Roadmap** | Updated April 16, 2026
+**Post-MVP Roadmap** | Updated May 12, 2026
 
 ---
 
@@ -14,6 +14,10 @@
 - **Auth stability** — tab-switch and token refresh no longer kick users off the create screen
 - **Location display** — deduplicated when address starts with location name
 - **Phase 2 claim tokens** — shared links now use private `?claim=` tokens instead of public database ids
+- **Rate limiting** — all edge functions (`create-bondzy`, `create-bondzy-self`, `claim-bondzy`, `redeem-bondzy`, `send-email`) gated by per-key hourly limits (May 11, 2026)
+- **PWA add-to-home-screen** — `public/manifest.json` + theme/apple meta tags in `index.html`; users can install Bondzy as a standalone app on iOS and Android (May 12, 2026)
+- **Error tracking scaffold** — Sentry SDK and `ErrorBoundary` wired into `src/main.jsx`; opt-in via `VITE_SENTRY_DSN` env var, tree-shaken to near-zero when unset (May 12, 2026)
+- **Leaf-component extraction** — `Header`, `AuthForm`, `Help`, `Profile`, `Ic`, `BondzyMark`, and the `B` color palette moved out of `App.jsx` into dedicated files; `App.jsx` reduced from ~1,135 to ~985 lines (May 12, 2026)
 
 ---
 
@@ -40,11 +44,11 @@
 **Goal:** Make it feel native on mobile (where 80%+ of GPS verification happens)
 
 **Features:**
-- Add-to-home-screen manifest + prompt
+- ~~Add-to-home-screen manifest + prompt~~ ✅ Shipped May 12, 2026
 - Push notifications (via service workers) — notify recipient when window opens
 - Offline support for viewing existing Bondzies
 
-**Complexity:** Medium (2-3 days)
+**Complexity:** Medium (2-3 days for the remaining service-worker work)
 
 ---
 
@@ -95,11 +99,11 @@
 
 ## Technical Debt (Address Before Scale)
 
-- **Split App.jsx** into separate component files (currently ~1,250 lines)
-- **Add email/function rate limiting** now that `send-email` is template-driven
+- **Split App.jsx further** — leaf components extracted (May 12, 2026); `Dash`, `Create`, `Detail`, and the main `BondzyApp` state container still live in `App.jsx` (~985 lines)
+- ~~**Add email/function rate limiting**~~ ✅ Done May 11, 2026
 - **Add TypeScript** for safety as codebase grows
-- **Error tracking** — Sentry or similar
-- **Rate limiting** — prevent Bondzy spam
+- ~~**Error tracking** — Sentry or similar~~ ✅ Scaffold in place (May 12, 2026); activate by setting `VITE_SENTRY_DSN` in Vercel
+- ~~**Rate limiting** — prevent Bondzy spam~~ ✅ Done May 11, 2026
 - **E2E tests** — Playwright for critical flows (create → notify → GPS → redeem)
 
 ---
@@ -112,4 +116,4 @@
 
 ---
 
-**Last Updated:** April 16, 2026
+**Last Updated:** May 12, 2026
