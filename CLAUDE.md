@@ -1,6 +1,6 @@
-# AGENTS.md
+# CLAUDE.md
 
-Guidance for Codex (and other AGENTS.md-aware coding agents) when working in this repo. Mirrors `CLAUDE.md`.
+Guidance for Claude Code (claude.ai/code) when working in this repo.
 
 ## Commands
 
