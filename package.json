@@ -9,6 +9,7 @@
     "test:rls": "node scripts/rls-smoke-test.js"
   },
   "dependencies": {
+    "@sentry/react": "^10.53.0",
     "@supabase/supabase-js": "^2.95.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
