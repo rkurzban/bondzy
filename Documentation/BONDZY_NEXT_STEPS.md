@@ -16,7 +16,7 @@
 - **Phase 2 claim tokens** — shared links now use private `?claim=` tokens instead of public database ids
 - **Rate limiting** — all edge functions (`create-bondzy`, `create-bondzy-self`, `claim-bondzy`, `redeem-bondzy`, `send-email`) gated by per-key hourly limits (May 11, 2026)
 - **PWA add-to-home-screen** — `public/manifest.json` + theme/apple meta tags in `index.html`; users can install Bondzy as a standalone app on iOS and Android (May 12, 2026)
-- **Error tracking scaffold** — Sentry SDK and `ErrorBoundary` wired into `src/main.jsx`; opt-in via `VITE_SENTRY_DSN` env var, tree-shaken to near-zero when unset (May 12, 2026)
+- **Error tracking scaffold** — Sentry SDK and `ErrorBoundary` wired into `src/main.jsx`; always bundled (~50 kB); `Sentry.init()` only runs when `VITE_SENTRY_DSN` is set in Vercel (May 12, 2026)
 - **Leaf-component extraction** — `Header`, `AuthForm`, `Help`, `Profile`, `Ic`, `BondzyMark`, and the `B` color palette moved out of `App.jsx` into dedicated files; `App.jsx` reduced from ~1,135 to ~985 lines (May 12, 2026)
 
 ---

@@ -62,7 +62,7 @@ Traditional planning relies on trust and hope:
 - **Styling:** Inline styles + custom animations
 - **State Management:** React hooks (useState, useEffect, useMemo)
 - **Routing:** Client-side navigation (page state, no router library)
-- **Error tracking:** Sentry SDK + React `ErrorBoundary` wired into `src/main.jsx`; activates when `VITE_SENTRY_DSN` is set in the Vercel environment, otherwise tree-shaken out at build time
+- **Error tracking:** Sentry SDK + React `ErrorBoundary` wired into `src/main.jsx`; always bundled (~50 kB); `Sentry.init()` only runs when `VITE_SENTRY_DSN` is set in Vercel (active in production as of May 12, 2026)
 - **Installable:** `public/manifest.json` + iOS/Android meta tags enable add-to-home-screen as a standalone PWA
 
 ### Backend
@@ -181,7 +181,7 @@ bondzies table:
 
 - `App.jsx` ~985 lines after leaf-component extraction (May 12, 2026); `Dash`, `Create`, `Detail`, and the main state container still live there and want further splitting
 - No TypeScript, no automated tests beyond an RLS smoke script
-- Sentry SDK is wired in but inactive in production until `VITE_SENTRY_DSN` is set in Vercel
+- Sentry SDK is active in production (`VITE_SENTRY_DSN` set May 12, 2026); adds ~50 kB to bundle in all environments
 - No analytics / admin dashboard
 
 ---
