@@ -112,10 +112,10 @@ const AuthPage=()=>{
           <Ic name="zap" size={13} color={B.gold}/> Free During Beta
         </div>
         <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(38px,6vw,58px)",lineHeight:1.1,marginBottom:20,letterSpacing:-0.5}}>
-          The Reward for<br/><span style={{color:B.gold}}>Showing Up.</span>
+          No More Hoping.<br/><span style={{color:B.gold}}>Make Things Happen.</span>
         </h1>
         <p style={{fontSize:18,lineHeight:1.7,opacity:0.82,maxWidth:500,margin:"0 auto 44px"}}>
-          Drop a digital treasure at any location. The only way to claim it is to actually be there — GPS verified, time-locked, no exceptions.
+          Motivate anyone to be at the right place, at the right time — with a little buried treasure.
         </p>
         <AuthForm {...formProps}/>
         <p style={{fontSize:12,opacity:0.45,marginTop:20,color:B.wh}}>Receiving a Reward Bondzy? No account needed — just click the link in your email.</p>
