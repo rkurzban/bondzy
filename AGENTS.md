@@ -14,7 +14,8 @@ git add .
 git commit -m "..."
 git push           # Vercel auto-deploys from main within ~60s
 
-# Supabase Edge Functions (run from repo root)
+# Supabase DB + Edge Functions (run from repo root)
+npx supabase db push                         # Apply pending DB migrations
 npx supabase functions deploy send-bondzy-email
 npx supabase secrets set BREVO_API_KEY=...      # one-time / on key rotation
 
@@ -147,6 +148,13 @@ Should list `forfeit-expired-bondzies`.
 - **`profiles` RLS uses a `can_read_bondzy_profile()` helper** so dashboard / profile lookups don't recursively break Bondzy visibility. Don't rewrite the profile SELECT policy as a bare `auth.uid()` join through bondzies — it'll deadlock the dashboard query.
 - All client-side writes go through RLS-policed inserts; server-side writes (the Edge Function, the cron job, the `create-bondzy.js` script) use the **service role key** and bypass RLS by design.
 
+### Data API Grants
+
+- Bondzy uses Supabase's Data API through `supabase-js` in the browser and Edge Functions, so public-schema tables/functions must have explicit grants as Supabase phases out implicit public-schema exposure.
+- `supabase/migrations/20260517_explicit_data_api_grants.sql` is the source of truth for Data API exposure. It grants authenticated access to `bondzies` and `profiles`, service-role access to internal tables/functions, and keeps `anon` blocked from app tables.
+- Internal tables (`bondzy_secrets`, `bondzy_claims`, `rate_limit_hits`) should stay hidden from `anon` and `authenticated`; Edge Functions access them with the service-role key.
+- Future migrations that add public tables/functions must include matching `GRANT`/`REVOKE` statements. RLS controls rows after a table is exposed; grants control whether the Data API can reach the table at all.
+
 ### Where Each Secret Lives
 
 | Secret | Location | Used by |
@@ -164,6 +172,8 @@ Should list `forfeit-expired-bondzies`.
 - **Auto-forfeit only marks `active → forfeit`.** It does not retroactively touch `redeemed` rows. If a redemption was racing the cron window, the redemption wins (`status` flips to `redeemed` before the cron next fires).
 - **Deep links use `?claim=<token>`, not URL paths.** The app is a SPA with page-state routing; there's no React Router. Any new email type that needs a deep link should mirror this pattern, not introduce a new path-based one.
 - **`scripts/create-bondzy.js` uses the service role key** to write directly to `bondzies`, bypassing RLS. The row insert still fires the `on_bondzy_created` trigger, so emails go out automatically. Don't reach for the script when the UI flow would work — keep it for bulk / manual creation.
+- **Supabase migration versions must be unique.** The CLI uses the filename prefix before the first underscore as the migration version. Do not create multiple files named like `20260510_*.sql`; use a more specific prefix such as `202605100001_*.sql` for same-day follow-up migrations.
+- **Data API grants are separate from RLS.** If a new table is created in `public`, add explicit grants for `authenticated` and/or `service_role` only if that role should reach it through Supabase REST/RPC. Do not rely on implicit grants.
 - **Free-tier ceilings:** Brevo 300 emails/day, Supabase 500 MB DB / 50K auth users, Vercel 100 GB bandwidth/mo. The first one you'll bump into in growth is Brevo.
 - **App.jsx is the monolith.** Splitting it is on the roadmap but hasn't happened yet. When making changes, prefer additive edits over restructuring unless a component split is the explicit task.
 
@@ -171,7 +181,7 @@ Should list `forfeit-expired-bondzies`.
 
 - `git push` to `main` triggers Vercel auto-deploy. Production deploys complete in ~60s; you can watch logs in the Vercel dashboard.
 - Edge Function changes require an explicit `npx supabase functions deploy <name>` — they're not deployed by the git push.
-- Database migrations apply with `npx supabase db push` (or via the SQL editor in the Supabase dashboard for ad-hoc changes — the migration files are the source of truth, so anything done via the dashboard should be backfilled as a migration).
+- Database migrations apply with `npx supabase db push` (or via the SQL editor in the Supabase dashboard for ad-hoc changes — the migration files are the source of truth, so anything done via the dashboard should be backfilled as a migration). This is separate from `git push`; GitHub/Vercel deploys do not apply Supabase migrations.
 - DNS for `app.bondzy.com` lives at GoDaddy; Vercel issued the cert.
 
 ## Where Things Live (Operator Cheat Sheet)

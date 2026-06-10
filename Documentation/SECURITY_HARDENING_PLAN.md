@@ -12,6 +12,7 @@ This hardening pass closes the highest-risk gaps after Phase 1 reward secrecy an
 - Promise penalty values are moved into `bondzy_secrets` and cleared from `bondzies.reward_link`.
 - RLS policies are version-controlled in a migration.
 - Profile RLS uses `can_read_bondzy_profile()` to avoid recursive dashboard/profile joins.
+- Supabase Data API grants are explicit, so public-schema table/function exposure does not depend on Supabase's old implicit defaults.
 - An RLS smoke-test script verifies anon, creator, recipient, and unrelated-user access.
 - Branded email icons are hosted PNG assets, not client-provided HTML or email-client emoji rendering.
 
@@ -22,9 +23,10 @@ This hardening pass closes the highest-risk gaps after Phase 1 reward secrecy an
 - `supabase/functions/create-bondzy-self/index.ts`
 - `supabase/functions/redeem-bondzy/index.ts`
 - `supabase/functions/claim-bondzy/index.ts`
-- `supabase/migrations/20260510_promise_penalty_secrets.sql`
-- `supabase/migrations/20260510_rls_policies.sql`
 - `supabase/migrations/20260510_fix_profile_rls_recursion.sql`
+- `supabase/migrations/202605100001_promise_penalty_secrets.sql`
+- `supabase/migrations/202605100002_rls_policies.sql`
+- `supabase/migrations/20260517_explicit_data_api_grants.sql`
 - `public/email-icons/*.png`
 - `src/App.jsx`
 - `scripts/rls-smoke-test.js`
@@ -37,10 +39,13 @@ Run these after Phase 1 and Phase 2 are already deployed.
 
    ```sql
    -- Run the contents of:
-   -- supabase/migrations/20260510_promise_penalty_secrets.sql
-   -- supabase/migrations/20260510_rls_policies.sql
    -- supabase/migrations/20260510_fix_profile_rls_recursion.sql
+   -- supabase/migrations/202605100001_promise_penalty_secrets.sql
+   -- supabase/migrations/202605100002_rls_policies.sql
+   -- supabase/migrations/20260517_explicit_data_api_grants.sql
    ```
+
+   Prefer `npx supabase db push` from the repo root when the project is linked. Migration versions must be unique; the CLI uses the filename prefix before the first underscore as the version.
 
 2. Confirm server-side forfeit cron exists.
 

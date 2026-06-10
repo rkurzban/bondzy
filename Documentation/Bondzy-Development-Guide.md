@@ -1,7 +1,7 @@
 # Bondzy Development Guide
 ## Where We Are and What's Next
 
-*Last updated: May 10, 2026*
+*Last updated: May 17, 2026*
 
 ---
 
@@ -25,6 +25,7 @@
 | Brevo API key security | Brevo key rotated and stored as the Supabase `BREVO_API_KEY` Edge Function secret |
 | Claim token links | Shared links use private `?claim=` tokens instead of public database ids |
 | Server-side forfeit cron | Supabase cron owns expired Bondzy forfeits; browser code no longer writes forfeits |
+| Explicit Supabase Data API grants | `20260517_explicit_data_api_grants.sql` locks in table/function exposure before Supabase's implicit public-schema grants change |
 | Email icon assets | Hosted PNG email icons live in `public/email-icons/` and render consistently in Gmail |
 | app.bondzy.com | App now lives at app.bondzy.com, separate from the www.bondzy.com marketing site |
 | www.bondzy.com footer link | Small tasteful link to the marketing site in the app footer |
@@ -121,6 +122,14 @@ git push
 
 Vercel auto-deploys within ~60 seconds. Test locally first with `npm run dev`.
 
+Database migrations are separate from Git/Vercel deploys. Apply pending Supabase migrations from the repo root:
+
+```powershell
+npx supabase db push
+```
+
+Migration filename versions must be unique. The Supabase CLI treats the prefix before the first underscore as the version, so avoid multiple files like `20260510_*.sql`; use a more specific same-day prefix such as `202605100001_*.sql`.
+
 Supabase Edge Functions are deployed separately:
 
 ```powershell
@@ -157,6 +166,17 @@ When email icon assets change, deploy the frontend first so `https://app.bondzy.
 - `bondzy_id` (uuid, references `bondzies.id`)
 - `claim_token` (uuid, unique private shared-link token)
 - `created_at` (timestamp)
+
+### Data API Grants
+
+Bondzy uses Supabase's Data API through both the browser client and Edge Functions. Grants are now explicit in `supabase/migrations/20260517_explicit_data_api_grants.sql`:
+
+- `authenticated` can access the app-facing `bondzies` and `profiles` tables, with RLS deciding which rows are visible.
+- `anon` is blocked from application tables; public claim links go through Edge Functions.
+- `service_role` can access internal tables/functions used by Edge Functions and maintenance scripts.
+- Internal tables such as `bondzy_secrets`, `bondzy_claims`, and `rate_limit_hits` stay hidden from `anon` and `authenticated`.
+
+When adding a new table or RPC function in `public`, add the matching `GRANT`/`REVOKE` statements in the same migration. RLS is not a replacement for Data API grants; the grant controls whether the API can reach the object at all.
 
 ---
 
