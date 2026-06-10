@@ -88,7 +88,7 @@ const rewardLabel = (bondzy: BondzyEmailRow) =>
 const graceLabel = (bondzy: BondzyEmailRow) => `${bondzy.grace_minutes ?? 10} minutes`;
 
 const brandLine = () => `<div style="text-align:center;margin:0 0 34px;">
-  <img src="https://app.bondzy.com/bondzymarkv2.png" alt="Bondzy" width="48" height="48" style="display:inline-block;vertical-align:middle;margin-right:14px;border:0;border-radius:8px;background:#21345C;"/>
+  <img src="https://app.bondzy.com/bondzy-logo.png" alt="Bondzy" width="48" height="48" style="display:inline-block;vertical-align:middle;margin-right:14px;border:0;"/>
   <span style="display:inline-block;vertical-align:middle;color:${GOLD};font-size:24px;font-weight:800;line-height:1;">Bondzy</span>
 </div>`;
 

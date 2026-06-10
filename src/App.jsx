@@ -106,7 +106,7 @@ const AuthPage=()=>{
     <div style={{background:`linear-gradient(150deg,${B.navy} 0%,#1e3a6e 60%,#162d58 100%)`,padding:"72px 20px 64px",textAlign:"center",color:B.wh}}>
       <div style={{maxWidth:640,margin:"0 auto"}}>
         <div style={{marginBottom:24}}>
-          <img src="/bondzymarkv2.png" alt="Bondzy" style={{height:72,width:72,objectFit:"contain"}}/>
+          <img src="/bondzy-logo.png" alt="Bondzy" style={{height:72,width:72,objectFit:"contain"}}/>
         </div>
         <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(212,168,67,0.18)",border:"1px solid rgba(212,168,67,0.4)",padding:"6px 18px",borderRadius:20,fontSize:13,fontWeight:700,color:B.goldL,marginBottom:32,letterSpacing:0.3}}>
           <Ic name="zap" size={13} color={B.gold}/> Free During Beta
@@ -240,7 +240,7 @@ const AuthPage=()=>{
     {/* ── FOOTER ── */}
     <div style={{textAlign:"center",padding:"28px 20px",borderTop:`1px solid ${B.bdr}`,color:B.gry,fontSize:13}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:6}}>
-        <img src="/bondzymarkv2.png" alt="Bondzy" style={{width:22,height:22,objectFit:"contain"}}/>
+        <img src="/bondzy-logo.png" alt="Bondzy" style={{width:22,height:22,objectFit:"contain"}}/>
         <span style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:B.navy}}>Bondzy</span>
       </div>
       © 2026 ·{" "}<a href="https://www.bondzy.com" target="_blank" rel="noopener noreferrer" style={{color:B.gry,textDecoration:"none"}} onMouseOver={e=>e.currentTarget.style.color=B.navy} onMouseOut={e=>e.currentTarget.style.color=B.gry}>www.bondzy.com</a>{" "}· info@bondzy.com
@@ -621,7 +621,7 @@ const Detail = ({bz,onNav,onRedeem,onReveal,role,isPublic=false}) => {
     <div style={{background:B.wh,borderRadius:14,border:`2px solid ${bz.status==="redeemed"?B.grn:bz.status==="forfeit"?B.red:B.navy}`,overflow:"hidden",animation:"slideUp 0.4s ease"}}>
       <div style={{background:bz.status==="redeemed"?B.grn:bz.status==="forfeit"?B.red:B.navy,padding:"22px 24px",color:"white",textAlign:"center"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:12}}>
-          <img src="/bondzymarkv2.png" alt="Bondzy" style={{width:32,height:32,objectFit:"contain"}}/>
+          <img src="/bondzy-logo.png" alt="Bondzy" style={{width:32,height:32,objectFit:"contain"}}/>
           <span style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:"white"}}>Bondzy</span>
         </div>
         <div style={{fontSize:11,fontWeight:800,letterSpacing:1.5,marginBottom:6,opacity:0.8}}>{isProm?"PROMISE BONDZY":"REWARD BONDZY"}</div>

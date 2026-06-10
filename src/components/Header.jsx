@@ -5,7 +5,7 @@ export const Header = ({page,onNav,email}) => (
   <div style={{background:B.navy,padding:"0 20px",position:"sticky",top:0,zIndex:100,boxShadow:"0 2px 10px rgba(0,0,0,0.15)"}}>
     <div style={{maxWidth:900,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",height:56}}>
       <div onClick={()=>onNav(email?"dashboard":"landing")} style={{cursor:"pointer",display:"flex",alignItems:"center",gap:8}}>
-        <img src="/bondzymarkv2.png" alt="Bondzy" style={{width:28,height:28,objectFit:"contain"}}/>
+        <img src="/bondzy-logo.png" alt="Bondzy" style={{width:28,height:28,objectFit:"contain"}}/>
         <span style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:B.wh}}>Bondzy</span>
       </div>
       {email&&<div style={{display:"flex",alignItems:"center",gap:4}}>
